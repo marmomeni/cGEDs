@@ -128,7 +128,4 @@ background-color : #fff;
      <div class='button'>
         <a href='#' class='btn'>Our Vision </a>
         <a href="'#" class='btn'>Mission</a>
-     </div>
-</header>
-</body>
-</html>
+    
