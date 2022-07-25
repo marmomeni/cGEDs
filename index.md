@@ -1,7 +1,6 @@
 <html>
 <head>
         <title> SHINY 2022 </title>
-        <link rel='stylesheet' href='style.css' type='text/css'>
 </head>
 <link rel="stylesheet" type="text/css" href="style.css" />
 <body>
@@ -9,8 +8,8 @@
 ​
      <div class='main' >
          <div class ='logo'>
-             <img src='https://i.pinimg.com/474x/9c/eb/bd/9cebbd412ac9867c82844970fe019af9--logo-inspiration-ribbons.jpg](https://cdn.animaapp.com/projects/62dee552131b88900d856df6/releases/62dee6375150f1813bf7831c/img/dna-bro@1x.png'>
-         </div>
+             <img src='(https://cdn.animaapp.com/projects/62dee552131b88900d856df6/releases/62dee6375150f1813bf7831c/img/dna-bro@1x.png]
+      </div>
       <ul>
                <li class='active'> <a href='#'>Home</a></li> 
                <li class='active'> <a href='#'>Application</a></li> 
