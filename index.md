@@ -8,7 +8,7 @@
 ​
      <div class='main' >
          <div class ='logo'>
-             <img src="CGDS.png" alt="Placeholder Logo">
+             <img src="images/CGDS.png" alt="Placeholder Logo">
          </div>
       <ul>
                <li class='active'> <a href='#'>Home</a></li> 
