@@ -24,6 +24,6 @@
         <a href='#' class='btn'>Our Vision </a>
         <a href="'#" class='btn'>Mission</a>
      </div>
-</header>
+     </header>
 </body>
 </html>
