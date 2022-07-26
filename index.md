@@ -1,7 +1,7 @@
 <html>
 <head>
         <title> SHINY 2022 </title>
-        <link rel='stylesheet' href='style.css' type='text/css'>
+        <link rel='stylesheet' href='css/main.css' type='text/css'>
 </head>
 <body>
      <header> 
