@@ -88,7 +88,7 @@ defaults:
 # 7. Site settings
 encoding: utf-8 # Make sure the encoding is right
 lang: en-GB # Set the site language
-title: "R Shiny Educational Transcriptomics App" # Site name or title, also used in jekyll-seo-tag
+title: "2022 Cancer Sensitivity App" # Site name or title, also used in jekyll-seo-tag
 logo: /images/sMAP_logo.jpg" # Site logo, also used in jekyll-seo-tag
 description: "R Shiny Cancer Sensitivity App by STEM-Away Bioinformatics Teams" # Site description and default description, also used in jekyll-seo-tag
 url: "https://mentorchains.github.io/RShiny2022/" # Site url, also used in jekyll-seo-tag
@@ -131,7 +131,7 @@ navigation_footer:
 social_links: # Appears in sidebar. Set the urls then uncomment and comment out as desired
   Twitter: https://twitter.com/stemaway?lang=en
   LinkedIn: https://www.linkedin.com/company/stemaway/
-  GitHub: https://github.com/orgs/Bioinformatics-Pathway-STEM-Away/dashboard
+  GitHub: https://github.com/orgs/mentorchains/dashboard
   RSS: /feed.xml
 
 
