@@ -2,6 +2,10 @@
 <head>
         <title> SHINY 2022 </title>
         <link rel=“stylesheet” type=“text/css” href=“css/main.css”>
+         <div class='main' >
+         <div class ='logo'>
+             <img src="images/CGDS.png" alt="Placeholder Logo">
+         </div>
 </head>
 <body>
      <header> 
