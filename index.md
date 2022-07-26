@@ -8,7 +8,7 @@
 ​
      <div class='main' >
          <div class ='logo'>
-             <img src='https://i.pinimg.com/474x/9c/eb/bd/9cebbd412ac9867c82844970fe019af9--logo-inspiration-ribbons.jpg'>
+             <img src="CGDS.png" alt="Placeholder Logo">
          </div>
       <ul>
                <li class='active'> <a href='#'>Home</a></li> 
