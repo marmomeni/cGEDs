@@ -2,7 +2,7 @@
 <head>
         <title> SHINY 2022 </title>
 </head>
-<link rel="stylesheet" type="text/css" href="style.css" />
+<link rel="stylesheet" type="text/css" href="style.css" media=”screen” />
 <body>
      <header> 
 ​
