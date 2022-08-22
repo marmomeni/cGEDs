@@ -4,16 +4,13 @@ library(shiny)
 library(DT)
 library(vroom)
 ds<-vroom::vroom("www/Drug sensitivity data (GDSC1).csv")#Drug Sensitivity Data
-ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression 
+ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression Data
 ui <- fluidPage(
-  
-  # Application title
-  navbarPage(
-    "CGDS (Cancer Gene-expression Drug Sensitivity app)",
-    tabPanel("Correlation Calculation", 
-      sidebarPanel(
-      
-       selectInput("cancer","Select a cancer type",
+       navbarPage(
+        "CGDS (Cancer Gene-expression Drug-Sensitivity app)",
+          tabPanel("Correlation Calculation", 
+            sidebarPanel(
+              selectInput("cancer","Select a cancer type",
                   choices=c("Brain lower grade glioma (LGG)",
                   "Kidney renal clear cell carcinoma (KIRC)",
                   "Esophageal carcinoma (ESCA)",
@@ -39,47 +36,45 @@ ui <- fluidPage(
                   "Adrenocortical carcinoma (ACC)"," Chronic lymphocytic leukemia (CLL)",
                   "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
                   "Acute myeloid leukemia (LAML)",selected=NULL)),
-      br(),
-      br(),
-      selectizeInput("Genes", "Please enter your desiered genes",
+              br(),
+              br(),
+              selectizeInput("Genes", "Please enter your desiered genes",
                      choices = colnames(ex[,3:8]),multiple=TRUE),
-      br(),
-      br(),
-      actionButton("cal","Calculate Correlations")
-      ),
+              br(),
+              br(),
+              actionButton("cal","Calculate Correlations")
+           ),
  
-    mainPanel(
+            mainPanel(
       
-      DT::DTOutput("cortabs"),
+              DT::DTOutput("cortabs"),
       
-      downloadButton("download","Download .tsv"),
-
-    )
-  ),
+              downloadButton("download","Download .tsv")
+            )
+           ),
       
-      #selectInput("gene-drug","Please select the gene-drug assossiation you want to visualize",choices=)
-  tabPanel("Visualization",
-    sidebarPanel(
-      numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
-      br(),
-      br(),
-      sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
-      sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
-      br(),
-      br(),
-      actionButton("Thre","Apply Thresholds")
-      ),
-    mainPanel(
-      DT::DTOutput("Sigcors"),
-      br(),
-      br(),
-      uiOutput("outputUI"),
-      #plotOutput("volcanopl")
-     )
-   )
+          #selectInput("gene-drug","Please select the gene-drug assossiation you want to visualize",choices=)
+          tabPanel("Visualization",
+            sidebarPanel(
+              numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+              br(),
+              br(),
+              sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
+              sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
+              br(),
+              br(),
+              actionButton("Thre","Apply Thresholds")
+            ),
+            mainPanel(
+              DT::DTOutput("Sigcors"),
+              br(),
+              br(),
+              uiOutput("outputUI"),
+              plotOutput("scatterpl")
+            )
+           )
+      )
   )
-)
- 
 
 server <- function(input, output,session) {
   
@@ -156,6 +151,15 @@ server <- function(input, output,session) {
    
    #})
   
+   Scatter<-reactive({
+     drug_example <- subset(df, Drug.name == sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3])
+     
+     ggplot(drug_example,aes(df()[which(sigcors4()$GeneDrug ==input$outputUI) , 4],
+                             df()[which(sigcors4()$GeneDrug ==input$outputUI) , 3],
+                             label= `Cell line`))+geom_point(size=2)+geom_smooth(method=("lm"))+
+                             geom_text(nudge_x = 0, nudge_y = 0.2,size=6,color="darkcyan")+
+                             theme_bw()+theme(text = element_text(size=20))
+   })
    # Display the correlation table
   output$cortabs<-DT::renderDT(
     correlations()
@@ -166,7 +170,9 @@ server <- function(input, output,session) {
   #output$volcanopl<-renderPlot(
   #  Volcano()
   #)
-  
+  output$scatterpl<-renderPlot(
+    Scatter() 
+  )
   # Add the ability to download the correlation table
   output$download <- downloadHandler(
     filename = function() {
