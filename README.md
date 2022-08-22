@@ -1,6 +1,6 @@
 # RShiny2022
 # RShiny2022: Insert Updated Name
-This repository is dedicated to the documentation and management of RShiny 2022 app.
+This repository is dedicated to the documentation and management of CGDS (Cancer Gene-expression Drug-Sensitivity) RShiny app (2022).
 
 ---
 #### Web Links
