@@ -1,5 +1,5 @@
-# RShiny2022
-# RShiny2022: Insert Updated Name
+
+# RShiny2022 App: CGDS (Cancer Gene-expression Drug-Sensitivity) App
 This repository is dedicated to the documentation and management of CGDS (Cancer Gene-expression Drug-Sensitivity) RShiny app (2022).
 
 ---
