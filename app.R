@@ -3,9 +3,10 @@ library(tidyverse)
 library(shiny)
 library(DT)
 library(vroom)
+library(ggplot2)
 ds<-vroom::vroom("www/Drug sensitivity data (GDSC1).csv")#Drug Sensitivity Data
 ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression Data
-ui <- fluidPage(
+ui<- fluidPage(
        navbarPage(
         "CGDS (Cancer Gene-expression Drug-Sensitivity app)",
           tabPanel("Correlation Calculation", 
@@ -39,7 +40,7 @@ ui <- fluidPage(
               br(),
               br(),
               selectizeInput("Genes", "Please enter your desiered genes",
-                     choices = colnames(ex[,3:8]),multiple=TRUE),
+                     choices = colnames(ex),multiple=TRUE),
               br(),
               br(),
               actionButton("cal","Calculate Correlations")
@@ -70,7 +71,7 @@ ui <- fluidPage(
               br(),
               br(),
               uiOutput("outputUI"),
-              plotOutput("scatterpl")
+              plotOutput("scatterplt")
             )
            )
       )
@@ -93,7 +94,6 @@ server <- function(input, output,session) {
   
   # Merge the two tables
   df <- reactive(merge(x = ds3(), y = ex3(), by ="Cell line"))
-
   correlations<-eventReactive(input$cal,{
     
     # Provide a vector of drug names
@@ -152,13 +152,15 @@ server <- function(input, output,session) {
    #})
   
    Scatter<-reactive({
-     drug_example <- subset(df, Drug.name == sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3])
-     
-     ggplot(drug_example,aes(df()[which(sigcors4()$GeneDrug ==input$outputUI) , 4],
-                             df()[which(sigcors4()$GeneDrug ==input$outputUI) , 3],
-                             label= `Cell line`))+geom_point(size=2)+geom_smooth(method=("lm"))+
+     drug_example <- subset(df(), Drug.name == sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3])
+    
+     gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI), 4])
+     ggplot(drug_example,aes(drug_example[,gene],
+                             IC50,
+                             label= `Cell line`))+geom_point(size=2)+
                              geom_text(nudge_x = 0, nudge_y = 0.2,size=6,color="darkcyan")+
-                             theme_bw()+theme(text = element_text(size=20))
+                             theme_bw()+theme(text = element_text(size=20))+geom_smooth(method=("lm"))
+    
    })
    # Display the correlation table
   output$cortabs<-DT::renderDT(
@@ -170,9 +172,9 @@ server <- function(input, output,session) {
   #output$volcanopl<-renderPlot(
   #  Volcano()
   #)
-  output$scatterpl<-renderPlot(
+  output$scatterplt<-renderPlot(
     Scatter() 
-  )
+   )
   # Add the ability to download the correlation table
   output$download <- downloadHandler(
     filename = function() {
