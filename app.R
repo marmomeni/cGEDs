@@ -40,7 +40,7 @@ ui<- fluidPage(
               br(),
               br(),
               selectizeInput("Genes", "Please enter your desiered genes",
-                     choices = colnames(ex),multiple=TRUE),
+                     choices = colnames(ex[,3:10]),multiple=TRUE),
               br(),
               br(),
               actionButton("cal","Calculate Correlations")
