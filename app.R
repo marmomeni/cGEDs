@@ -7,9 +7,8 @@ library(ggplot2)
 ds<-vroom::vroom("www/Drug sensitivity data (GDSC1).csv")#Drug Sensitivity Data
 ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression Data
 ui<- fluidPage(
-       navbarPage(
-        "CGDS (Cancer Gene-expression Drug-Sensitivity app)",
-          tabPanel("Correlation Calculation", 
+       navbarPage("CGDS (Cancer Gene-expression Drug-Sensitivity app)",id="inTabset",
+          tabPanel("Correlation Calculation",
             sidebarPanel(
               selectInput("cancer","Select a cancer type",
                   choices=c("Brain lower grade glioma (LGG)",
@@ -43,14 +42,16 @@ ui<- fluidPage(
                      choices = colnames(ex[,3:10]),multiple=TRUE),
               br(),
               br(),
-              actionButton("cal","Calculate Correlations")
+              actionButton("cal","Calculate Correlations",class="btn btn-success")
            ),
  
             mainPanel(
       
               DT::DTOutput("cortabs"),
-      
-              uiOutput("download")
+              uiOutput("download"),
+              br(),
+              uiOutput("vistab")
+              
             )
            ),
       
@@ -64,7 +65,7 @@ ui<- fluidPage(
               sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
               br(),
               br(),
-              actionButton("Thre","Apply Thresholds")
+              actionButton("Thre","Apply Thresholds",class="btn btn-success")
             ),
             mainPanel(
               DT::DTOutput("Sigcors"),
@@ -121,6 +122,32 @@ server <- function(input, output,session) {
     } 
     return(corrs)
   })
+  # Add the ability to download the correlation table
+  # Download button appears after clicking on the calculate button using observeEvent and renderUI
+  observeEvent(input$cal, {
+    output$download <- renderUI({
+      downloadHandler(
+        filename = function() {
+          "Pearson Correlations and FDRs.tsv"
+        },
+        content = function(file) {
+          vroom::vroom_write(correlations(), file)
+        } 
+      )  
+    })
+  })
+  
+  # "Apply thresholds and visualization" button appears when clicking on the "Calculate Correlations" button 
+  observeEvent(input$cal, {
+    output$vistab <- renderUI({actionButton("vistab" ,"Apply thresholds and visualization",class="btn btn-success")})
+  })
+  
+  #When clicking on the "Apply thresholds and visualization button appears" button, the tab switches to
+  #the Visualization tab
+  observeEvent(input$vistab, {
+    updateTabsetPanel(session, "inTabset",selected = "Visualization")
+  })
+  
  #Apply thresholds
   sigcors<-eventReactive(input$Thre,{
   sigcors1<-subset(correlations(), FDR< input$FDRThr & Corr> min(input$PosCorThre))
@@ -175,20 +202,7 @@ server <- function(input, output,session) {
   output$scatterplt<-renderPlot(
     Scatter() 
    )
-  # Add the ability to download the correlation table
-  # Download button appears after clicking on the calculate button using observeEvent and renderUI
-  observeEvent(input$cal, {
-    output$download <- renderUI({
-      downloadHandler(
-        filename = function() {
-          "Pearson Correlations and FDRs.tsv"
-        },
-        content = function(file) {
-          vroom::vroom_write(correlations(), file)
-        }
-      )   
-    })
-  })                
+             
 }
 
 shinyApp(ui = ui, server = server)
