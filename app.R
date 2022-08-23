@@ -1,12 +1,51 @@
+library(shinydashboard)
+library(shiny)
+library(bs4Dash)
+library(fresh)
 library(psych)
 library(tidyverse)
-library(shiny)
 library(DT)
 library(vroom)
-library(ggplot2)
 ds<-vroom::vroom("www/Drug sensitivity data (GDSC1).csv")#Drug Sensitivity Data
-ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression Data
-ui<- fluidPage(
+ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression 
+
+
+ui <- dashboardPage(
+  header <- dashboardHeader(title = dashboardBrand(title = "CDSA Dashboard")
+  ),
+  sidebar <- dashboardSidebar(
+    sidebarMenu(
+      menuItem("Home Page", tabName = "introduction"),
+      menuItem("Select Data", tabName = "dataSelect"),
+      menuItem("See Demo", tabName = "demo"),
+      menuItem("FAQs", icon = icon("question-circle"), tabName = "faq"),
+      menuItem("Contact", tabName = "contact", icon = icon("users")),
+      menuItem("Meet Our Team", tabName = "meetteam")
+    )
+  ),
+  body <- dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "introduction",
+              fluidRow(
+                column(12,
+                       align="center",
+                       #Introduction block 
+                       jumbotron(
+                         status = "success",btnName = NULL,
+                         title = HTML("<b>Cancer drug sensitivity app</b>"),
+                         lead = "An application for checking drug sensitivity towards cancer for a gene",
+                         "This app is created by STEM-Away RShiny Project Team - Session 1, 2022",
+                         href = "https://stemaway.com/" 
+                       ),
+                       div(style ="display:inline-block", 
+                           actionButton('to_dataSelect', label = 'Begin', status = "success"),
+                           actionButton('to_demo', label = 'See Demo', status = "success"),
+                           actionButton('to_faq', label = 'FAQ', status = "success"))
+                ),
+              )
+      ),
+    tabItem(tabName = "dataSelect",fluidPage(
        navbarPage("CGDS (Cancer Gene-expression Drug-Sensitivity app)",id="inTabset",
           tabPanel("Correlation Calculation",
             sidebarPanel(
@@ -36,13 +75,10 @@ ui<- fluidPage(
                   "Adrenocortical carcinoma (ACC)"," Chronic lymphocytic leukemia (CLL)",
                   "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
                   "Acute myeloid leukemia (LAML)",selected=NULL)),
-              br(),
-              br(),
               selectizeInput("Genes", "Please enter your desiered genes",
                      choices = colnames(ex[,3:10]),multiple=TRUE),
+              actionButton("cal","Calculate Correlations",class="btn btn-success"),
               br(),
-              br(),
-              actionButton("cal","Calculate Correlations",class="btn btn-success")
            ),
  
             mainPanel(
@@ -59,14 +95,13 @@ ui<- fluidPage(
           tabPanel("Visualization",
             sidebarPanel(
               numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
-              br(),
-              br(),
               sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
               sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
               br(),
-              br(),
               actionButton("Thre","Apply Thresholds",class="btn btn-success")
             ),
+              br(),
+              br(),
             mainPanel(
               DT::DTOutput("Sigcors"),
               br(),
@@ -77,7 +112,46 @@ ui<- fluidPage(
            )
       )
   )
-
+    ),
+  tabItem(tabName = "demo",
+          fluidRow(
+            column(4,
+                   box('This is the demo page', title = "Demo Page",  
+                       status = "primary", solidHeader = TRUE,
+                       collapsed = FALSE, width=12)                    
+            )
+          )
+  ),
+  tabItem(tabName = "faq",
+          fluidRow(
+            column(4,
+                   box('Questions here', title = "FAQ Page",  
+                       status = "primary", solidHeader = TRUE, collapsible = T,
+                       collapsed = FALSE, width=12)                    
+            )
+          )
+  ),
+  tabItem(tabName = "contact",
+          fluidRow(
+            column(4,
+                   box('contact', title = "Contact us",  
+                       status = "primary", solidHeader = TRUE, collapsible = T,
+                       collapsed = FALSE, width=12)                    
+            )
+          )
+  ),
+  tabItem(tabName = "meetteam",
+          fluidRow(
+            column(4,
+                   box('content goes here', title = "The team",  
+                       status = "primary", solidHeader = TRUE, collapsible = T,
+                       collapsed = FALSE, width=12)                    
+            )
+          )
+       )
+    )
+  )
+)
 server <- function(input, output,session) {
   
   # Cancer type selection by the user
