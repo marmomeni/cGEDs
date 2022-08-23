@@ -50,7 +50,7 @@ ui<- fluidPage(
       
               DT::DTOutput("cortabs"),
       
-              downloadButton("download","Download .tsv")
+              uiOutput("download")
             )
            ),
       
@@ -176,14 +176,19 @@ server <- function(input, output,session) {
     Scatter() 
    )
   # Add the ability to download the correlation table
-  output$download <- downloadHandler(
-    filename = function() {
-      "Pearson Correlations and FDRs.tsv"
-    },
-    content = function(file) {
-      vroom::vroom_write(correlations(), file)
-    }
-  )                 
+  # Download button appears after clicking on the calculate button using observeEvent and renderUI
+  observeEvent(input$cal, {
+    output$download <- renderUI({
+      downloadHandler(
+        filename = function() {
+          "Pearson Correlations and FDRs.tsv"
+        },
+        content = function(file) {
+          vroom::vroom_write(correlations(), file)
+        }
+      )   
+    })
+  })                
 }
 
 shinyApp(ui = ui, server = server)
