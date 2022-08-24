@@ -107,7 +107,7 @@ ui <- dashboardPage(
               br(),
               br(),
               uiOutput("outputUI"),
-              plotOutput("scatterplt")
+              plotOutput("scatterplt",width = "100%")
             )
            )
       )
@@ -253,14 +253,16 @@ server <- function(input, output,session) {
    #})
   
    Scatter<-reactive({
-     drug_example <- subset(df(), Drug.name == sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3])
+     drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3]
+     drug_df <- subset(df(), Drug.name == drug)
     
      gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI), 4])
-     ggplot(drug_example,aes(drug_example[,gene],
+     ggplot(drug_df,aes(drug_df[,gene],
                              IC50,
-                             label= `Cell line`))+geom_point(size=2)+
-                             geom_text(nudge_x = 0, nudge_y = 0.2,size=6,color="darkcyan")+
-                             theme_bw()+theme(text = element_text(size=20))+geom_smooth(method=("lm"))
+                             label= `Cell line`))+geom_point(size=1)+
+                             geom_text(nudge_x = 0, nudge_y = 0.1,size=4,color="darkcyan")+
+                             theme_bw()+theme(text = element_text(size=15))+geom_smooth(method=("lm"))+
+                             labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))
     
    })
    # Display the correlation table
@@ -274,7 +276,7 @@ server <- function(input, output,session) {
   #  Volcano()
   #)
   output$scatterplt<-renderPlot(
-    Scatter(),res = 96 
+    Scatter(),res = 96, height = 500, width = 500 
    )
              
 }
