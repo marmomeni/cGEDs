@@ -11,7 +11,7 @@ ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression
 
 
 ui <- dashboardPage(
-  header <- dashboardHeader(title = dashboardBrand(title = "CDSA Dashboard")
+  header <- dashboardHeader(title = dashboardBrand(title = "CGDS app")
   ),
   sidebar <- dashboardSidebar(
     sidebarMenu(
@@ -33,8 +33,8 @@ ui <- dashboardPage(
                        #Introduction block 
                        jumbotron(
                          status = "success",btnName = NULL,
-                         title = HTML("<b>Cancer drug sensitivity app</b>"),
-                         lead = "An application for checking drug sensitivity towards cancer for a gene",
+                         title = HTML("<b> CGDS (Cancer Gene-expression Drug-Sensitivity) app </b>"),
+                         lead = "An application for finding drug effectivity biomarkers in different cancer types",
                          "This app is created by STEM-Away RShiny Project Team - Session 1, 2022",
                          href = "https://stemaway.com/" 
                        ),
@@ -274,7 +274,7 @@ server <- function(input, output,session) {
   #  Volcano()
   #)
   output$scatterplt<-renderPlot(
-    Scatter() 
+    Scatter(),res = 96 
    )
              
 }
