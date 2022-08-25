@@ -6,8 +6,9 @@ library(psych)
 library(tidyverse)
 library(DT)
 library(vroom)
-ds<-vroom::vroom("www/Drug sensitivity data (GDSC1).csv")#Drug Sensitivity Data
-ex<-vroom::vroom("www/Gene expression data (GDSC).csv ")#Gene Expression 
+library(ggrepel)
+ds<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")#Drug Sensitivity Data
+ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression 
 
 
 ui <- dashboardPage(
@@ -107,7 +108,13 @@ ui <- dashboardPage(
               br(),
               br(),
               uiOutput("outputUI"),
-              plotOutput("scatterplt",width = "100%")
+              plotOutput("scatterplt",width = "100%"),
+              br(),
+              br(),
+              br(),
+              br(),
+              br(),
+              checkboxInput("scatterLabel","Show cell line names",value = TRUE)
             )
            )
       )
@@ -257,12 +264,19 @@ server <- function(input, output,session) {
      drug_df <- subset(df(), Drug.name == drug)
     
      gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI), 4])
+     if (input$scatterLabel==TRUE){
      ggplot(drug_df,aes(drug_df[,gene],
                              IC50,
                              label= `Cell line`))+geom_point(size=1)+
-                             geom_text(nudge_x = 0, nudge_y = 0.1,size=4,color="darkcyan")+
                              theme_bw()+theme(text = element_text(size=15))+geom_smooth(method=("lm"))+
-                             labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))
+                             labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
+                             geom_text_repel()
+                             
+     }
+     else{ggplot(drug_df,aes(drug_df[,gene],
+                             IC50))+geom_point(size=1)+
+         theme_bw()+theme(text = element_text(size=15))+geom_smooth(method=("lm"))+
+         labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))}
     
    })
    # Display the correlation table
