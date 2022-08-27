@@ -7,7 +7,9 @@ library(tidyverse)
 library(DT)
 library(vroom)
 library(ggrepel)
-ds<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")#Drug Sensitivity Data
+
+dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
+dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
 ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression 
 
 
@@ -47,9 +49,10 @@ ui <- dashboardPage(
               )
       ),
     tabItem(tabName = "dataSelect",fluidPage(
-       navbarPage("CGDS (Cancer Gene-expression Drug-Sensitivity app)",id="inTabset",
+       navbarPage("cGEDs (cancer Gene-Expression Drug-sensitivity) app",id="inTabset",
           tabPanel("Correlation Calculation",
             sidebarPanel(
+              selectInput("dataset","Select a drug sensitivity and gene expression dataset",choices=c("GDSC1","GDSC2")), 
               selectInput("cancer","Select a cancer type",
                   choices=c("Brain lower grade glioma (LGG)",
                   "Kidney renal clear cell carcinoma (KIRC)",
@@ -58,7 +61,7 @@ ui <- dashboardPage(
                   "Stomach adenocarcinoma (STAD)","Mesothelioma (MESO)",
                   "Skin cutaneous melanoma (SKCM)","Lung adenocarcinoma (LUAD)",
                   "Glioblastoma multiforme (GBM)",
-                  "Head and neck squamous cell carcinoma(HNSC)",
+                  "Head and neck squamous cell carcinoma (HNSC)",
                   "Liver hepatocellular carcinoma (LIHC)",
                   "Small cell lung cancer (SCLC)","Neuroblastoma (NB)",
                   "Ovarian serous cystadenocarcinoma (OV)",
@@ -162,11 +165,17 @@ ui <- dashboardPage(
 server <- function(input, output,session) {
   
   # Cancer type selection by the user
-  ds2 <- reactive(ds %>% 
+  
+  if (input$dataset=="GDSC1"){
+  ds <- reactive(dsGDSC1 %>% 
     filter(ds$`Cancer-Type`== input$cancer))
-
+  }
+  else if(input$dataset=="GDSC2"){
+  ds<-reactive(dsGDSC2 %>% 
+    filter(ds$`Cancer-Type`== input$cancer))
+  }  
   # remove the cancer type column since it's not necessary anymore
-  ds3<-reactive(ds2()[-4])
+  ds2<-reactive(ds()[-4])
   
   # Gene selection by the user
   ex2<-reactive(ex[,input$Genes])
@@ -175,7 +184,7 @@ server <- function(input, output,session) {
   ex3 <- reactive(cbind('Cell line' =ex[1], ex2()))
   
   # Merge the two tables
-  df <- reactive(merge(x = ds3(), y = ex3(), by ="Cell line"))
+  df <- reactive(merge(x = ds2(), y = ex3(), by ="Cell line"))
   correlations<-eventReactive(input$cal,{
     
     # Provide a vector of drug names
