@@ -8,6 +8,9 @@ library(DT)
 library(vroom)
 library(ggrepel)
 library(ggExtra)
+library(colourpicker)
+library(shinyWidgets)
+library(shinyjs)
 
 dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
 dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
@@ -118,8 +121,18 @@ ui <- dashboardPage(
               br(),
               br(),
               br(),
-              checkboxInput("scatterLabel","Show cell line names",value = TRUE),
-              checkboxInput("ShowBoxplot","Show marginal boxplots",value = TRUE)
+              prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
+                             ,status = "success", outline = TRUE),
+              div(id = "Col0"),
+              prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
+                              status = "success", outline = TRUE),
+              div(id = "Col1"),
+              div(id = "Col2"),
+              br(),
+              br(),
+              br(),
+              br(),
+              br()
             )
            )
       )
@@ -261,17 +274,7 @@ dataselect<-reactive({
     selectInput("outputUI", "Please choose desiered Gene/Drug pair for the visualization",
                    choices = sigcors4()$GeneDrug,multiple=FALSE)
   }) })
-  
-   #Volcano Plot
-   
-   #Volcano<-reactive({
-   #drug_example <- subset(correlations(), Drug == sigcors4()[which(sigcors4()$GeneDrug == input$outputUI) , 3])
-   
-   #p <- ggplot(drug_example, aes(x = drug_example$Corr , y = -log10(drug_example$FDR))) + geom_point() + theme_minimal() 
-   
-   #p + geom_vline(xintercept=c(0), col="red") #+ ggtitle(past(correlations()[which(correlations()$GeneDrug == input$outputUI) , 3],"drug"))
-   
-   #})
+
   #Scatter/boxplot
    Scatter<-reactive({
      drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3]
@@ -286,8 +289,8 @@ dataselect<-reactive({
           theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
           geom_smooth(method=("lm"))+
           labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
-          geom_point(size=1, aes(colour=GeneExpressLevel))+
-          scale_colour_manual(values=c('darkorange', 'grey54'))+
+          geom_point(size=2, aes(colour=GeneExpressLevel))+
+          scale_colour_manual(values=c(input$col1, input$col2))+
           geom_text_repel()
           ggMarginal(x,type="boxplot",groupColour=TRUE,groupFill = TRUE)
         }
@@ -296,8 +299,8 @@ dataselect<-reactive({
           theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
           geom_smooth(method=("lm"))+
           labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
-          geom_point(size=1, aes(colour=GeneExpressLevel))+
-          scale_colour_manual(values=c('darkorange', 'grey54'))
+          geom_point(size=2, aes(colour=GeneExpressLevel))+
+          scale_colour_manual(values=c(input$col1,input$col2))
           ggMarginal(x,type="boxplot",groupColour=TRUE,groupFill = TRUE)
         }
      }
@@ -317,6 +320,51 @@ dataselect<-reactive({
           geom_point(size=1)+geom_text_repel()
          }
      }
+   })
+   
+   observeEvent(input$ShowBoxplot,{
+     if (input$ShowBoxplot==TRUE){
+       insertUI(
+         selector = "#Col1",
+         ui=colourpicker::colourInput("col1", "Select colour of boxplots related to the high expression cell lines"
+       ,showColour="both", value = "5158AD")
+       )
+     }
+     else if(input$ShowBoxplot==FALSE){
+       removeUI(
+         selector = "div#Col1 > div"
+       )
+     } 
+   })
+  
+   observeEvent(input$ShowBoxplot,{
+     if (input$ShowBoxplot==TRUE){
+       insertUI(
+         selector = "#Col2",
+         ui=colourpicker::colourInput("col2", "Select colour of boxplots related to the low expression cell lines"
+         ,showColour="both", value = "F78A25")
+       )
+     }
+     else if(input$ShowBoxplot==FALSE){
+       removeUI(
+         selector = "div#Col2 > div"
+       )
+     } 
+   })
+  
+   observeEvent(input$ShowBoxplot,{
+     if (input$ShowBoxplot==FALSE){
+       insertUI(
+         selector = "#Col0",
+         ui=colourpicker::colourInput("col0", "Select colour of dots"
+         ,showColour="both", value = "F78A25")
+       )
+     }
+     else if(input$ShowBoxplot==TRUE){
+       removeUI(
+         selector = "div#Col0 > div"
+       )
+     } 
    })
 
    # Display the correlation table
