@@ -166,16 +166,19 @@ server <- function(input, output,session) {
   
   # Cancer type selection by the user
   
+dataselect<-reactive({
   if (input$dataset=="GDSC1"){
-  ds <- reactive(dsGDSC1 %>% 
-    filter(ds$`Cancer-Type`== input$cancer))
+  ds <- dsGDSC1 %>% 
+    filter(dsGDSC1$`Cancer-Type`== input$cancer)
   }
   else if(input$dataset=="GDSC2"){
-  ds<-reactive(dsGDSC2 %>% 
-    filter(ds$`Cancer-Type`== input$cancer))
-  }  
+  ds<-dsGDSC2 %>% 
+    filter(dsGDSC2$`Cancer-Type`== input$cancer)
+  } 
+  
+  })
   # remove the cancer type column since it's not necessary anymore
-  ds2<-reactive(ds()[-4])
+  ds2<-reactive(dataselect()[-4])
   
   # Gene selection by the user
   ex2<-reactive(ex[,input$Genes])
