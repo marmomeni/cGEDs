@@ -118,7 +118,8 @@ ui <- dashboardPage(
               br(),
               br(),
               br(),
-              checkboxInput("scatterLabel","Show cell line names",value = TRUE)
+              checkboxInput("scatterLabel","Show cell line names",value = TRUE),
+              checkboxInput("ShowBoxplot","Show marginal boxplots",value = TRUE)
             )
            )
       )
@@ -271,28 +272,53 @@ dataselect<-reactive({
    #p + geom_vline(xintercept=c(0), col="red") #+ ggtitle(past(correlations()[which(correlations()$GeneDrug == input$outputUI) , 3],"drug"))
    
    #})
-  
+  #Scatter/boxplot
    Scatter<-reactive({
      drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3]
      drug_df <- subset(df(), Drug.name == drug)
      gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI), 4])
      med=median(drug_df[,gene])
      drug_df$GeneExpressLevel = ifelse (drug_df[,gene] >= med, "high", "low")
-     
-     x<-ggplot(drug_df,aes(drug_df[,gene],IC50,label=`Cell line`))+geom_point(size=2, aes(colour=GeneExpressLevel))+
-       theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
-       geom_smooth(method=("lm"))+scale_colour_manual(values=c('darkorange', 'grey54'))+
-       labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))
-     
-     if (input$scatterLabel==FALSE){     
-         x
-         ggMarginal(x,type="boxplot",groupColour=TRUE,groupFill = TRUE)
-         }
+    
+     if(input$ShowBoxplot==TRUE){
+        if(input$scatterLabel==TRUE){
+          x<-ggplot(drug_df,aes(drug_df[,gene],IC50,label=`Cell line`))+
+          theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
+          geom_smooth(method=("lm"))+
+          labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
+          geom_point(size=1, aes(colour=GeneExpressLevel))+
+          scale_colour_manual(values=c('darkorange', 'grey54'))+
+          geom_text_repel()
+          ggMarginal(x,type="boxplot",groupColour=TRUE,groupFill = TRUE)
+        }
+        else{
+          x<-ggplot(drug_df,aes(drug_df[,gene],IC50,label=`Cell line`))+
+          theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
+          geom_smooth(method=("lm"))+
+          labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
+          geom_point(size=1, aes(colour=GeneExpressLevel))+
+          scale_colour_manual(values=c('darkorange', 'grey54'))
+          ggMarginal(x,type="boxplot",groupColour=TRUE,groupFill = TRUE)
+        }
+     }
      else{
-         y<-x+geom_text_repel()
-         ggMarginal(y,type="boxplot",groupColour=TRUE,groupFill = TRUE)
+        if(input$scatterLabel==FALSE){
+          ggplot(drug_df,aes(drug_df[,gene],IC50,label=`Cell line`))+
+          theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
+          geom_smooth(method=("lm"))+
+          labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
+          geom_point(size=1)
          }
-     })
+        else{
+          ggplot(drug_df,aes(drug_df[,gene],IC50,label=`Cell line`))+
+          theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
+          geom_smooth(method=("lm"))+
+          labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
+          geom_point(size=1)+geom_text_repel()
+         }
+     }
+   })
+
    # Display the correlation table
   output$cortabs<-DT::renderDT(
     correlations()
