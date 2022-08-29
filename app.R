@@ -7,6 +7,7 @@ library(tidyverse)
 library(DT)
 library(vroom)
 library(ggrepel)
+library(ggExtra)
 
 dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
 dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
@@ -164,7 +165,7 @@ ui <- dashboardPage(
 )
 server <- function(input, output,session) {
   
-  # Cancer type selection by the user
+  # Dataset and cancer type selection by the user
   
 dataselect<-reactive({
   if (input$dataset=="GDSC1"){
@@ -274,23 +275,24 @@ dataselect<-reactive({
    Scatter<-reactive({
      drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3]
      drug_df <- subset(df(), Drug.name == drug)
-    
      gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI), 4])
-     if (input$scatterLabel==TRUE){
-     ggplot(drug_df,aes(drug_df[,gene],
-                             IC50,
-                             label= `Cell line`))+geom_point(size=1)+
-                             theme_bw()+theme(text = element_text(size=15))+geom_smooth(method=("lm"))+
-                             labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
-                             geom_text_repel()
-                             
-     }
-     else{ggplot(drug_df,aes(drug_df[,gene],
-                             IC50))+geom_point(size=1)+
-         theme_bw()+theme(text = element_text(size=15))+geom_smooth(method=("lm"))+
-         labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))}
-    
-   })
+     med=median(drug_df[,gene])
+     drug_df$GeneExpressLevel = ifelse (drug_df[,gene] >= med, "high", "low")
+     
+     x<-ggplot(drug_df,aes(drug_df[,gene],IC50,label=`Cell line`))+geom_point(size=2, aes(colour=GeneExpressLevel))+
+       theme_bw()+theme(text = element_text(size=12), legend.position='bottom')+
+       geom_smooth(method=("lm"))+scale_colour_manual(values=c('darkorange', 'grey54'))+
+       labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))
+     
+     if (input$scatterLabel==FALSE){     
+         x
+         ggMarginal(x,type="boxplot",groupColour=TRUE,groupFill = TRUE)
+         }
+     else{
+         y<-x+geom_text_repel()
+         ggMarginal(y,type="boxplot",groupColour=TRUE,groupFill = TRUE)
+         }
+     })
    # Display the correlation table
   output$cortabs<-DT::renderDT(
     correlations()
