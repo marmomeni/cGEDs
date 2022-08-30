@@ -22,6 +22,7 @@ ui <- dashboardPage(
   ),
   sidebar <- dashboardSidebar(
     sidebarMenu(
+      id = "tabs",
       menuItem("Home Page", tabName = "introduction"),
       menuItem("Select Data", tabName = "dataSelect"),
       menuItem("See Demo", tabName = "demo"),
@@ -178,10 +179,34 @@ ui <- dashboardPage(
   )
 )
 server <- function(input, output,session) {
+  observeEvent(input$to_end, {
+    stopApp()
+  }
+  )
+  observeEvent(input$to_dataSelect, {
+    updateTabItems(session, "tabs", selected = "dataSelect")
+  }
+  )
+  observeEvent(input$to_demo, {
+    updateTabItems(session, "tabs", "demo")
+  }
+  )
+  observeEvent(input$to_faq, {
+    updateTabItems(session, "tabs", "faq")
+  }
+  )
   
-  # Dataset and cancer type selection by the user
-  
-dataselect<-reactive({
+  # DATA SELECT BUTTONS
+  observeEvent(input$backTo_introduction, {
+    updateTabItems(session, "tabs", "introduction")
+  }
+  )
+  observeEvent(input$to_demo, {
+    updateTabItems(session, "tabs", "demo")
+  }
+  )
+# Dataset and cancer type selection by the user
+  dataselect<-reactive({
   if (input$dataset=="GDSC1"){
   ds <- dsGDSC1 %>% 
     filter(dsGDSC1$`Cancer-Type`== input$cancer)
@@ -322,6 +347,7 @@ dataselect<-reactive({
      }
    })
    
+   # ObserveEvent functions related to selecting the color of scatter/boxplots
    observeEvent(input$ShowBoxplot,{
      if (input$ShowBoxplot==TRUE){
        insertUI(
