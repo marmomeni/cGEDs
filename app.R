@@ -25,7 +25,11 @@ ui <- dashboardPage(
       id = "tabs",
       menuItem("Home Page", tabName = "introduction"),
       menuItem("Select Data", tabName = "dataSelect"),
-      menuItem("See Demo", tabName = "demo"),
+      menuItem("Apply thresholds", tabName = "applyThresholds"),
+      menuItem("Visualization", tabName = "visualization",
+               menuSubItem(text=tags$div("Scatter/Boxplot",style= "display: inline-block;vertical-align:middle"), tabName = "scatterBoxplot"),
+               menuSubItem(text=tags$div("Bubble plot",style= "display: inline-block;vertical-align:middle"), tabName = "bubblePlot")),
+      menuItem("Tutorial", tabName = "tutorial"),
       menuItem("FAQs", icon = icon("question-circle"), tabName = "faq"),
       menuItem("Contact", tabName = "contact", icon = icon("users")),
       menuItem("Meet Our Team", tabName = "meetteam")
@@ -53,96 +57,103 @@ ui <- dashboardPage(
                 ),
               )
       ),
-    tabItem(tabName = "dataSelect",fluidPage(
-       navbarPage("cGEDs (cancer Gene-Expression Drug-sensitivity) app",id="inTabset",
-          tabPanel("Correlation Calculation",
-            sidebarPanel(
-              selectInput("dataset","Select a drug sensitivity and gene expression dataset",choices=c("GDSC1","GDSC2")), 
-              selectInput("cancer","Select a cancer type",
-                  choices=c("Brain lower grade glioma (LGG)",
-                  "Kidney renal clear cell carcinoma (KIRC)",
-                  "Esophageal carcinoma (ESCA)",
-                  "Breast invasive carcinoma (BRCA)" ,
-                  "Stomach adenocarcinoma (STAD)","Mesothelioma (MESO)",
-                  "Skin cutaneous melanoma (SKCM)","Lung adenocarcinoma (LUAD)",
-                  "Glioblastoma multiforme (GBM)",
-                  "Head and neck squamous cell carcinoma (HNSC)",
-                  "Liver hepatocellular carcinoma (LIHC)",
-                  "Small cell lung cancer (SCLC)","Neuroblastoma (NB)",
-                  "Ovarian serous cystadenocarcinoma (OV)",
-                  "Colon and rectum adenocarcinoa (COAD/READ) (COREAD)",
-                  "Multiple myeloma (MM)",
-                  "Lung squamous cell carcinoma (LUSC)",
-                  "Uterine corpus endometrial carcinoma (UCEC)",
-                  "Pancreatic adenocarcinoma (PAAD)",
-                  "Acute lymphoblastic leukemia (ALL)",
-                  "Head and neck squamous cell carcinoma (HNSC)",
-                  "Lymphoid neoplasm diffuse large B-cell lymphoma (DLBC)",
-                  "Medulloblastoma (MB)","Chronic myelogenous leukemia (LCML)",
-                  "Thyroid carcinoma (THCA)",
-                  "Bladder urothelial carcinoma (BLCA)","Prostate adenocarcinoma (PRAD)",
-                  "Adrenocortical carcinoma (ACC)"," Chronic lymphocytic leukemia (CLL)",
-                  "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
-                  "Acute myeloid leukemia (LAML)",selected=NULL)),
-              selectizeInput("Genes", "Please enter your desiered genes",
-                     choices = colnames(ex[,3:10]),multiple=TRUE),
-              actionButton("cal","Calculate Correlations",class="btn btn-success"),
-              br(),
-           ),
- 
-            mainPanel(
-      
-              DT::DTOutput("cortabs"),
-              uiOutput("download"),
-              br(),
-              uiOutput("vistab")
-              
-            )
-           ),
-      
-          #selectInput("gene-drug","Please select the gene-drug assossiation you want to visualize",choices=)
-          tabPanel("Visualization",
-            sidebarPanel(
-              numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
-              sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
-              sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
-              br(),
-              actionButton("Thre","Apply Thresholds",class="btn btn-success")
-            ),
-              br(),
-              br(),
-            mainPanel(
-              DT::DTOutput("Sigcors"),
-              br(),
-              br(),
-              uiOutput("outputUI"),
-              plotOutput("scatterplt",width = "100%"),
-              br(),
-              br(),
-              br(),
-              br(),
-              br(),
-              prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
-                             ,status = "success", outline = TRUE),
-              div(id = "Col0"),
-              prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
-                              status = "success", outline = TRUE),
-              div(id = "Col1"),
-              div(id = "Col2"),
-              br(),
-              br(),
-              br(),
-              br(),
-              br()
-            )
-           )
-      )
-  )
+    tabItem(tabName = "dataSelect",
+          fluidRow(id="inTabset",
+               column(1,),
+               column(5,align="left",
+                 
+                   selectInput("dataset","Select a drug sensitivity and gene expression dataset",choices=c("GDSC1","GDSC2")), 
+                   selectInput("cancer","Select a cancer type",choices=c("Brain lower grade glioma (LGG)",
+                               "Kidney renal clear cell carcinoma (KIRC)",
+                               "Esophageal carcinoma (ESCA)",
+                               "Breast invasive carcinoma (BRCA)" ,
+                               "Stomach adenocarcinoma (STAD)","Mesothelioma (MESO)",
+                               "Skin cutaneous melanoma (SKCM)","Lung adenocarcinoma (LUAD)",
+                               "Glioblastoma multiforme (GBM)",
+                               "Head and neck squamous cell carcinoma (HNSC)",
+                               "Liver hepatocellular carcinoma (LIHC)",
+                               "Small cell lung cancer (SCLC)","Neuroblastoma (NB)",
+                               "Ovarian serous cystadenocarcinoma (OV)",
+                               "Colon and rectum adenocarcinoa (COAD/READ) (COREAD)",
+                               "Multiple myeloma (MM)",
+                               "Lung squamous cell carcinoma (LUSC)",
+                               "Uterine corpus endometrial carcinoma (UCEC)",
+                               "Pancreatic adenocarcinoma (PAAD)",
+                               "Acute lymphoblastic leukemia (ALL)",
+                               "Head and neck squamous cell carcinoma (HNSC)",
+                               "Lymphoid neoplasm diffuse large B-cell lymphoma (DLBC)",
+                               "Medulloblastoma (MB)","Chronic myelogenous leukemia (LCML)",
+                               "Thyroid carcinoma (THCA)",
+                               "Bladder urothelial carcinoma (BLCA)","Prostate adenocarcinoma (PRAD)",
+                               "Adrenocortical carcinoma (ACC)"," Chronic lymphocytic leukemia (CLL)",
+                               "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
+                               "Acute myeloid leukemia (LAML)",selected=NULL)),
+                     selectizeInput("Genes", "Please enter your desiered genes",
+                               choices = colnames(ex[,3:10]),multiple=TRUE),
+                     actionBttn("cal","Calculate Correlations",style="pill",color="success",size = "sm")
+               ),
+               column(5,align="left",
+                     DT::DTOutput("cortabs"),
+                     uiOutput("download"),
+                     br(),
+                     uiOutput("vistab")
+               )     
+          )
     ),
-  tabItem(tabName = "demo",
+
+  tabItem(tabName = "applyThresholds",
+          fluidRow(
+            column(1,),
+            column(5,align="left",
+                   numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+                   sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
+                   sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
+                   br(),
+                   actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))
+            ,column(5,align="center",
+                   DT::DTOutput("Sigcors"),                   
+            )
+          )
+  ),
+  tabItem(tabName = "scatterBoxplot",
+          fluidRow(
+            column(12,align="center",
+                   uiOutput("selGenedrug")),
+                   
+            column(6,align="right",
+                   plotOutput("scatterplt",width = "100%"),
+),
+            column(6,align="center",
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
+                                  ,status = "success", outline = TRUE),
+                   prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
+                                  status = "success", outline = TRUE),
+                   div(id = "Col0"),
+                   div(id = "Col1"),
+                   div(id = "Col2"),
+
+                                       
+            )
+          )
+  ),
+  tabItem(tabName = "bubblePlot",
           fluidRow(
             column(4,
-                   box('This is the demo page', title = "Demo Page",  
+                   box('This is the Bubble plot page', title = "tutorial",  
+                       status = "primary", solidHeader = TRUE,
+                       collapsed = FALSE, width=12)                    
+            )
+          )
+  ),
+  tabItem(tabName = "tutorial",
+          fluidRow(
+            column(4,
+                   box('This is the tutorial page', title = "tutorial",  
                        status = "primary", solidHeader = TRUE,
                        collapsed = FALSE, width=12)                    
             )
@@ -272,13 +283,14 @@ server <- function(input, output,session) {
   
   # "Apply thresholds and visualization" button appears when clicking on the "Calculate Correlations" button 
   observeEvent(input$cal, {
-    output$vistab <- renderUI({actionButton("vistab" ,"Apply thresholds and visualization",class="btn btn-success")})
+    output$vistab <- renderUI({actionBttn("vistab","Next"
+                                          ,style="pill",color="success",size = "sm")})
   })
   
-  #When clicking on the "Apply thresholds and visualization button appears" button, the tab switches to
-  #the Visualization tab
+  #When clicking on the "Next" button, the tab switches to
+  #the apply threshold tab
   observeEvent(input$vistab, {
-    updateTabsetPanel(session, "inTabset",selected = "Visualization")
+    updateTabItems(session, "tabs", selected = "applyThresholds")
   })
   
  #Apply thresholds
@@ -295,16 +307,16 @@ server <- function(input, output,session) {
   })
   
   #Drop-down for choosing Gene/Drug pair for the visualization
-   observeEvent(input$Thre,{output$outputUI<-renderUI({
-    selectInput("outputUI", "Please choose desiered Gene/Drug pair for the visualization",
+   observeEvent(input$Thre,{output$selGenedrug<-renderUI({
+    selectInput("selGenedrug", "Please choose desiered Gene/Drug pair for the visualization",
                    choices = sigcors4()$GeneDrug,multiple=FALSE)
   }) })
 
   #Scatter/boxplot
    Scatter<-reactive({
-     drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI) , 3]
+     drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug) , 3]
      drug_df <- subset(df(), Drug.name == drug)
-     gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$outputUI), 4])
+     gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug), 4])
      med=median(drug_df[,gene])
      drug_df$GeneExpressLevel = ifelse (drug_df[,gene] >= med, "high", "low")
     
@@ -404,7 +416,7 @@ server <- function(input, output,session) {
   #  Volcano()
   #)
   output$scatterplt<-renderPlot(
-    Scatter(),res = 96, height = 500, width = 500 
+    Scatter(),res = 96, height = 700, width = 700 
    )
              
 }
