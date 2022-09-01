@@ -59,7 +59,7 @@ ui <- dashboardPage(
 
       tabItem(tabName = "dataSelection",
               fluidRow(
-                column(6, 
+                column(4,align="center",offset = 1,
                          selectInput("dataset","Select a drug sensitivity and gene expression dataset",
                                 choices=c("GDSC1","GDSC2"),selected=NULL),
                          selectInput("cancer","Select a cancer type",
@@ -94,11 +94,11 @@ ui <- dashboardPage(
 
                           actionButton("cal","Calculate Correlations", status="success")
                 ),
-                 column(6,
+                 column(5,align="center",offset = 1,wellPanel(
                           DT::DTOutput("cortabs"),
                           uiOutput("download"), 
-                          br(),
                           #uiOutput("threshtab")
+                 )
                  )
               ),
     ),
