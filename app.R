@@ -24,11 +24,9 @@ ui <- dashboardPage(
     sidebarMenu(
       id = "tabs",
       menuItem("Home Page", tabName = "introduction",icon = icon("home")),
-      menuItem("Select Data", tabName = "dataSelect", icon = icon('mouse-pointer')),
-      menuItem("Apply thresholds", tabName = "applyThresholds",icon=icon('sliders-h')),
-      menuItem("Visualization", tabName = "visualization", icon = icon('chart-line', startExpanded = TRUE),
-               menuSubItem(text=tags$div("Scatter/Boxplot",style= "display: inline-block;vertical-align:middle"), tabName = "scatterBoxplot"),
-               menuSubItem(text=tags$div("Bubble plot",style= "display: inline-block;vertical-align:middle"), tabName = "bubblePlot")),
+      menuItem("Data Selelection & Correlation Calculation", tabName = "dataSelection",icon = icon('mouse-pointer')),
+      menuItem("Bubble Plot", tabName = "bubblePlot",icon = icon('chart-line')),
+      menuItem("Apply thresholds & Scatter/Boxplot", tabName = "applyThresholds",icon=icon('sliders-h')),
       menuItem("Tutorial", tabName = "tutorial",icon = icon('file-video')),
       menuItem("FAQs", icon = icon("question-circle"), tabName = "faq"),
       menuItem("Contact", tabName = "contact", icon = icon("users")),
@@ -53,99 +51,97 @@ ui <- dashboardPage(
                        div(style ="display:inline-block", 
                            actionButton('to_dataSelect', label = 'Begin', status = "success"),
                            actionButton('to_tutorial', label = 'Tutorial', status = "success"),
-                           actionButton('to_faq', label = 'FAQ', status = "success"))
-                ),
-              )
+                           actionButton('to_faq', label = 'FAQ', status = "success")
+                       )
+                 )
+              ),
       ),
-    tabItem(tabName = "dataSelect",
-            fluidPage(
+
+      tabItem(tabName = "dataSelection",
+              fluidRow(
+                column(6, 
+                         selectInput("dataset","Select a drug sensitivity and gene expression dataset",
+                                choices=c("GDSC1","GDSC2"),selected=NULL),
+                         selectInput("cancer","Select a cancer type",
+                                choices=c("Brain lower grade glioma (LGG)",
+                                          "Kidney renal clear cell carcinoma (KIRC)",
+                                          "Esophageal carcinoma (ESCA)",
+                                          "Breast invasive carcinoma (BRCA)",
+                                          "Stomach adenocarcinoma (STAD)","Mesothelioma (MESO)",
+                                          "Skin cutaneous melanoma (SKCM)","Lung adenocarcinoma (LUAD)",
+                                          "Glioblastoma multiforme (GBM)",
+                                          "Head and neck squamous cell carcinoma(HNSC)",
+                                          "Liver hepatocellular carcinoma (LIHC)",
+                                          "Small cell lung cancer (SCLC)","Neuroblastoma (NB)",
+                                          "Ovarian serous cystadenocarcinoma (OV)",
+                                          "Colon and rectum adenocarcinoa (COAD/READ) (COREAD)",
+                                          "Multiple myeloma (MM)",
+                                          "Lung squamous cell carcinoma (LUSC)",
+                                          "Uterine corpus endometrial carcinoma (UCEC)",
+                                          "Pancreatic adenocarcinoma (PAAD)",
+                                          "Acute lymphoblastic leukemia (ALL)",
+                                          "Head and neck squamous cell carcinoma (HNSC)",
+                                          "Lymphoid neoplasm diffuse large B-cell lymphoma (DLBC)",
+                                          "Medulloblastoma (MB)","Chronic myelogenous leukemia (LCML)",
+                                          "Thyroid carcinoma (THCA)",
+                                          "Bladder urothelial carcinoma (BLCA)","Prostate adenocarcinoma (PRAD)",
+                                          "Adrenocortical carcinoma (ACC)"," Chronic lymphocytic leukemia (CLL)",
+                                          "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
+                                          "Acute myeloid leukemia (LAML)"),selected=NULL)
+                          ,
+                          selectizeInput("Genes", "Please enter your desiered genes",
+                                          choices = colnames(ex[,3:8]),multiple=TRUE),
+
+                          actionButton("cal","Calculate Correlations", status="success")
+                ),
+                 column(6,
+                          DT::DTOutput("cortabs"),
+                          uiOutput("download"), 
+                          br(),
+                          #uiOutput("threshtab")
+                 )
+              ),
+    ),
+    
+    tabItem(tabName = "bubblePlot",
+            fluidRow(
+              column(4,
+                     box('This is the Bubble plot page', title = "Bubble plot",  
+                         status = "primary", solidHeader = TRUE,
+                         collapsed = FALSE, width=12)                    
+              )
+            )
+    ),
+
+    tabItem(tabName = "applyThresholds",
+        fluidPage(
               column(12,
                      div(style = "display:inline-block; float:left",
                          actionButton('to_introduction', label = 'Home', status = "success")),
                      div(style = "display:inline-block; float:right",
-                         actionButton('backto_tutorial', label = 'Tutorial', status = "success"))
+                         actionButton('backto_tutorial', label = 'See Tutorial', status = "success"))
               ),
               column(12, align="center",
-                     HTML("<h5>Choose from the options given to begin</h5>")
+                     HTML("<h5>Apply thresholds to select a Gene/drug pair for Scatter/Boxplot</h5>")
               ),
               hr(),
-              br(),
-              br(),
-              column(12,
-                     fluidRow(
-                       column(6, 
-                              selectInput("dataset","Select a drug sensitivity and gene expression dataset",
-                                          choices=c("GDSC1","GDSC2"),selected=NULL),
-                              selectInput("cancer","Select a cancer type",
-                                          choices=c("Brain lower grade glioma (LGG)",
-                                                    "Kidney renal clear cell carcinoma (KIRC)",
-                                                    "Esophageal carcinoma (ESCA)",
-                                                    "Breast invasive carcinoma (BRCA)",
-                                                    "Stomach adenocarcinoma (STAD)","Mesothelioma (MESO)",
-                                                    "Skin cutaneous melanoma (SKCM)","Lung adenocarcinoma (LUAD)",
-                                                    "Glioblastoma multiforme (GBM)",
-                                                    "Head and neck squamous cell carcinoma(HNSC)",
-                                                    "Liver hepatocellular carcinoma (LIHC)",
-                                                    "Small cell lung cancer (SCLC)","Neuroblastoma (NB)",
-                                                    "Ovarian serous cystadenocarcinoma (OV)",
-                                                    "Colon and rectum adenocarcinoa (COAD/READ) (COREAD)",
-                                                    "Multiple myeloma (MM)",
-                                                    "Lung squamous cell carcinoma (LUSC)",
-                                                    "Uterine corpus endometrial carcinoma (UCEC)",
-                                                    "Pancreatic adenocarcinoma (PAAD)",
-                                                    "Acute lymphoblastic leukemia (ALL)",
-                                                    "Head and neck squamous cell carcinoma (HNSC)",
-                                                    "Lymphoid neoplasm diffuse large B-cell lymphoma (DLBC)",
-                                                    "Medulloblastoma (MB)","Chronic myelogenous leukemia (LCML)",
-                                                    "Thyroid carcinoma (THCA)",
-                                                    "Bladder urothelial carcinoma (BLCA)","Prostate adenocarcinoma (PRAD)",
-                                                    "Adrenocortical carcinoma (ACC)"," Chronic lymphocytic leukemia (CLL)",
-                                                    "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
-                                                    "Acute myeloid leukemia (LAML)"),selected=NULL)
-                              ,
-                              selectizeInput("Genes", "Please enter your desiered genes",
-                                             choices = colnames(ex[,3:8]),multiple=TRUE),
-                     
-                              br(),
-                              br(),
-                              actionButton("cal","Calculate Correlations", status="success")
-                       ),
-                       column(6,DT::DTOutput("cortabs"),
-                              uiOutput("download"), 
-                              br(),
-                              uiOutput("threshtab")
-                       )
-                      )
-                )
-              )
-            ),
-
-  tabItem(tabName = "applyThresholds",
-          fluidRow(
-            column(1,),
-            column(5,align="left",
+        ),      
+            fluidRow(
+              column(4,align="center",offset = 1,
                    numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+                   wellPanel(
                    sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
                    sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
                    br(),
-                   actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))
-            ,column(5,align="center",
-                   DT::DTOutput("Sigcors"),                   
-            )
-          )
-  ),
-  tabItem(tabName = "scatterBoxplot",
-          fluidRow(
-            column(12,align="center",
-                   uiOutput("selGenedrug")),
-                   
-            column(6,align="right",
-                   plotOutput("scatterplt",width = "100%"),
-),
-            column(6,align="center",
+                   actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm")))
+            ,column(5,align="center",offset = 1,
+                    wellPanel(DT::DTOutput("Sigcors")), 
+             )
+          ),
+          hr(),
+          fluidRow(column(6,align="center",
                    br(),
-                   br(),
-                   br(),
+                   uiOutput("selGenedrug"),
                    br(),
                    br(),
                    prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
@@ -154,9 +150,12 @@ ui <- dashboardPage(
                                   status = "success", outline = TRUE),
                    div(id = "Col0"),
                    div(id = "Col1"),
-                   div(id = "Col2"),
-
-                                       
+                   div(id = "Col2")
+            ),
+            column(4,align="center",
+                   br(),
+                   br(),
+                   plotOutput("scatterplt",width = "100%")
             )
           )
   ),
@@ -211,7 +210,7 @@ ui <- dashboardPage(
 server <- function(input, output,session) {
 
   observeEvent(input$to_dataSelect, {
-    updateTabItems(session, "tabs", selected = "dataSelect")
+    updateTabItems(session, "tabs", selected = "dataSelection")
   }
   )
   observeEvent(input$to_tutorial, {
@@ -441,7 +440,7 @@ server <- function(input, output,session) {
   #  Volcano()
   #)
   output$scatterplt<-renderPlot(
-    Scatter(),res = 96, height = 700, width = 700 
+    Scatter(),res = 96, height = 600, width = 600 
    )
              
 }
