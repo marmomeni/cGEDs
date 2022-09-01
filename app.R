@@ -24,9 +24,9 @@ ui <- dashboardPage(
     sidebarMenu(
       id = "tabs",
       menuItem("Home Page", tabName = "introduction",icon = icon("home")),
-      menuItem("Data Selelection & Correlation Calculation", tabName = "dataSelection",icon = icon('mouse-pointer')),
+      menuItem(text=tags$div("Data Selelection &",tags$br(), "Correlation Calculation",style= "display: inline-block;vertical-align:middle"), tabName = "dataSelection",icon = icon('mouse-pointer')),
       menuItem("Bubble Plot", tabName = "bubblePlot",icon = icon('chart-line')),
-      menuItem("Apply thresholds & Scatter/Boxplot", tabName = "applyThresholds",icon=icon('sliders-h')),
+      menuItem(text=tags$div("Apply thresholds &",tags$br(), "Scatter/Boxplot",style= "display: inline-block;vertical-align:middle"), tabName = "applyThresholds",icon=icon('sliders-h')),
       menuItem("Tutorial", tabName = "tutorial",icon = icon('file-video')),
       menuItem("FAQs", icon = icon("question-circle"), tabName = "faq"),
       menuItem("Contact", tabName = "contact", icon = icon("users")),
@@ -58,7 +58,19 @@ ui <- dashboardPage(
       ),
 
       tabItem(tabName = "dataSelection",
-              fluidRow(
+         fluidPage(
+                column(12,
+                       div(style = "display:inline-block; float:left",
+                           actionButton('to_introduction', label = 'Home', status = "success")),
+                       div(style = "display:inline-block; float:right",
+                           actionButton('to_tutorial', label = 'See Tutorial', status = "success"))
+                ),
+                column(12, align="center",
+                       HTML("<h5>Choose from the options given to begin</h5>")
+                ),
+                hr(),
+          ),          
+          fluidRow(
                 column(4,align="center",offset = 1,
                          selectInput("dataset","Select a drug sensitivity and gene expression dataset",
                                 choices=c("GDSC1","GDSC2"),selected=NULL),
@@ -96,11 +108,26 @@ ui <- dashboardPage(
                 ),
                  column(5,align="center",offset = 1,wellPanel(
                           DT::DTOutput("cortabs"),
+                          br(),
                           uiOutput("download"), 
                           #uiOutput("threshtab")
-                 )
+                          )
                  )
               ),
+          fluidRow(
+                column(12,
+                         hr()
+                )
+          ),
+          fluidPage(
+               column(12,align="center",
+                  br(),
+                  div(style ="display:inline-block", 
+                      actionButton('to_bubblePlot', label = 'Bubble Plot', status = "success"),
+                      actionButton('to_scatterPlot', label = 'Apply thresholds & Scatter/Boxplot', status = "success"))
+               )
+         
+          )
     ),
     
     tabItem(tabName = "bubblePlot",
@@ -117,7 +144,7 @@ ui <- dashboardPage(
         fluidPage(
               column(12,
                      div(style = "display:inline-block; float:left",
-                         actionButton('to_introduction', label = 'Home', status = "success")),
+                         actionButton('backto_introduction', label = 'Home', status = "success")),
                      div(style = "display:inline-block; float:right",
                          actionButton('backto_tutorial', label = 'See Tutorial', status = "success"))
               ),
@@ -208,7 +235,8 @@ ui <- dashboardPage(
   )
 )
 server <- function(input, output,session) {
-
+  
+  # Home page buttons
   observeEvent(input$to_dataSelect, {
     updateTabItems(session, "tabs", selected = "dataSelection")
   }
@@ -218,28 +246,43 @@ server <- function(input, output,session) {
   }
   )
   
-  observeEvent(input$backto_tutorial, {
-    updateTabItems(session,"tabs", selected ="tutorial")
-  }
-  )
   observeEvent(input$to_faq, {
     updateTabItems(session, "tabs", selected ="faq")
   }
   )
   
+  # Data Selection & Correlation Calculation Buttons
   observeEvent(input$to_introduction, {
-    updateTabItems(session, "tabs",selected = "introduction")
-  })
+    updateTabItems(session, "tabs", "dataSelection")
+  }
+  )
+  observeEvent(input$to_tutorial, {
+    updateTabItems(session, "tabs", "tutorial")
+  }
+  )
   
-  # DATA SELECT BUTTONS
-  observeEvent(input$backTo_introduction, {
-    updateTabItems(session, "tabs", "introduction")
+  observeEvent(input$to_bubblePlot, {
+    updateTabItems(session, "tabs", "bubblePlot")
   }
   )
-  observeEvent(input$to_demo, {
-    updateTabItems(session, "tabs", "demo")
+  
+  observeEvent(input$to_scatterPlot, {
+    updateTabItems(session, "tabs", "applyThresholds")
   }
   )
+  
+  # Bubble Plot page buttons
+ 
+  # Apply thresholds & Scatter/boxplot buttons
+  observeEvent(input$to_introduction, {
+    updateTabItems(session, "tabs", "backto_introduction")
+  }
+  )
+  observeEvent(input$to_tutorial, {
+    updateTabItems(session, "tabs", "backto_tutorial")
+  }
+  )   
+  
 # Dataset and cancer type selection by the user
   dataselect<-reactive({
   if (input$dataset=="GDSC1"){
