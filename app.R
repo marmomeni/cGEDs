@@ -103,7 +103,7 @@ ui <- dashboardPage(
                           ,
                           selectizeInput("Genes", "Please enter your desiered genes",
                                           choices = colnames(ex[,3:8]),multiple=TRUE),
-
+                          useSweetAlert(),
                           actionButton("cal","Calculate Correlations", status="success")
                 ),
                  column(5,align="center",offset = 1,wellPanel(
@@ -312,6 +312,12 @@ server <- function(input, output,session) {
     drugs <- unique(df()$Drug.name)
     corrs <- NULL
     
+    # Progress bar code
+    progressSweetAlert(
+      session = session, id = "myprogress",
+      title = "Work in progress",
+      display_pct = TRUE, value = 0
+    )
     # Calculate the correlations and FDRs for each drug separately
     
     for (i in 1:length(drugs)) {
@@ -330,7 +336,20 @@ server <- function(input, output,session) {
       new_entry$Gene <- row.names(new_entry)
       row.names(new_entry) <- NULL
       corrs <- rbind(corrs, new_entry)
-    } 
+    }
+    for (i in seq_len(50)) {
+      Sys.sleep(0.1)
+      updateProgressBar(
+        session = session,
+        id = "myprogress",
+        value = i*2)
+    }
+    closeSweetAlert(session = session)
+    sendSweetAlert(
+      session = session,
+      title =" Correlation Calculation completed !",
+      type = "success"
+    )
     return(corrs)
   })
   # Add the ability to download the correlation table
