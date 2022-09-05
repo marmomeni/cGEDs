@@ -18,7 +18,7 @@ ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression
 
 
 ui <- dashboardPage(
-  header <- dashboardHeader(title = dashboardBrand(title = "CGDS app")
+  header <- dashboardHeader(title = dashboardBrand(title = "cGEDs app")
   ),
   sidebar <- dashboardSidebar(
     sidebarMenu(
@@ -35,7 +35,7 @@ ui <- dashboardPage(
   ),
   body <- dashboardBody(
     tabItems(
-      # First tab content
+      # Home page content
       tabItem(tabName = "introduction",
               fluidRow(
                 column(12,
@@ -43,7 +43,7 @@ ui <- dashboardPage(
                        #Introduction block 
                        jumbotron(
                          status = "success",btnName = NULL,
-                         title = HTML("<b> CGDS (Cancer Gene-expression Drug-Sensitivity) app </b>"),
+                         title = HTML("<b> cGEDs (cancer Gene-Expression Drug-sensitivity) app </b>"),
                          lead = "An application for finding drug effectivity biomarkers in different cancer types",
                          "This app is created by STEM-Away RShiny Project Team - Session 1, 2022",
                          href = "https://stemaway.com/" 
@@ -395,10 +395,11 @@ server <- function(input, output,session) {
   #Drop-down for choosing Gene/Drug pair for the visualization
    observeEvent(input$Thre,{output$selGenedrug<-renderUI({
     selectInput("selGenedrug", "Please choose desiered Gene/Drug pair for the visualization",
-                   choices = sigcors4()$GeneDrug,multiple=FALSE)
+                   choices = sigcors4()$GeneDrug,multiple=FALSE,selected=FALSE)
   }) })
 
   #Scatter/boxplot
+
    Scatter<-reactive({
      drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug) , 3]
      drug_df <- subset(df(), Drug.name == drug)
