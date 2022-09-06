@@ -11,6 +11,8 @@ library(ggExtra)
 library(colourpicker)
 library(shinyWidgets)
 library(shinyjs)
+library(dplyr)
+
 
 dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
 dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
@@ -25,8 +27,9 @@ ui <- dashboardPage(
       id = "tabs",
       menuItem("Home Page", tabName = "introduction",icon = icon("home")),
       menuItem(text=tags$div("Data Selelection &",tags$br(), "Correlation Calculation",style= "display: inline-block;vertical-align:middle"), tabName = "dataSelection",icon = icon('mouse-pointer')),
+      menuItem("Apply thresholds", tabName = "applyThresholds",icon=icon('sliders-h')),
       menuItem("Bubble Plot", tabName = "bubblePlot",icon = icon('chart-line')),
-      menuItem(text=tags$div("Apply thresholds &",tags$br(), "Scatter/Boxplot",style= "display: inline-block;vertical-align:middle"), tabName = "applyThresholds",icon=icon('sliders-h')),
+      menuItem("Scatter/Boxplot", tabName = "scatterBoxplot",icon = icon('chart-line')),
       menuItem("Tutorial", tabName = "tutorial",icon = icon('file-video')),
       menuItem("FAQs", icon = icon("question-circle"), tabName = "faq"),
       menuItem("Contact", tabName = "contact", icon = icon("users")),
@@ -102,14 +105,14 @@ ui <- dashboardPage(
                                           "Acute myeloid leukemia (LAML)"),selected=NULL)
                           ,
                           selectizeInput("Genes", "Please enter your desiered genes",
-                                          choices = colnames(ex[,3:8]),multiple=TRUE),
+                                          choices = colnames(ex[,3:54]),multiple=TRUE),
                           useSweetAlert(),
                           actionButton("cal","Calculate Correlations", status="success")
                 ),
                  column(5,align="center",offset = 1,wellPanel(
                           DT::DTOutput("cortabs"),
                           br(),
-                          uiOutput("download"), 
+                          uiOutput("download")
                           #uiOutput("threshtab")
                           )
                  )
@@ -119,29 +122,14 @@ ui <- dashboardPage(
                          hr()
                 )
           ),
-          fluidPage(
-               column(12,align="center",
-                  br(),
-                  div(style ="display:inline-block", 
-                      actionButton('to_bubblePlot', label = 'Bubble Plot', status = "success"),
-                      actionButton('to_scatterPlot', label = 'Apply thresholds & Scatter/Boxplot', status = "success"))
-               )
-         
-          )
+         fluidRow(
+           column(12,align="center",
+                  uiOutput("to_next")
+           )
+         )         
     ),
-    
-    tabItem(tabName = "bubblePlot",
-            fluidRow(
-              column(4,
-                     box('This is the Bubble plot page', title = "Bubble plot",  
-                         status = "primary", solidHeader = TRUE,
-                         collapsed = FALSE, width=12)                    
-              )
-            )
-    ),
-
     tabItem(tabName = "applyThresholds",
-        fluidPage(
+            fluidPage(
               column(12,
                      div(style = "display:inline-block; float:left",
                          actionButton('backto_introduction', label = 'Home', status = "success")),
@@ -152,20 +140,48 @@ ui <- dashboardPage(
                      HTML("<h5>Apply thresholds to select a Gene/drug pair for Scatter/Boxplot</h5>")
               ),
               hr(),
-        ),      
+            ),      
             fluidRow(
               column(4,align="center",offset = 1,
-                   numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
-                   wellPanel(
-                   sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
-                   sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
-                   br(),
-                   actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm")))
-            ,column(5,align="center",offset = 1,
-                    wellPanel(DT::DTOutput("Sigcors")), 
-             )
-          ),
-          hr(),
+                     numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+                     wellPanel(
+                       sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
+                       sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
+                       br(),
+                       actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))),
+              column(5,align="center",offset = 1,
+                      wellPanel(DT::DTOutput("Sigcors")), 
+              )
+            ),
+            fluidRow(
+              column(12,
+                     hr()
+              )
+            ),
+            fluidPage(
+              column(12,align="center",
+                     br(),
+                     div(style ="display:inline-block", 
+                         uiOutput('to_scatterPlot')),
+                     div(style ="display:inline-block", 
+                         uiOutput('to_bubblePlot'))
+              )
+              
+            )
+    ),
+            
+    tabItem(tabName = "bubblePlot",
+            fluidRow(
+              column(4,
+                     numericInput("bubbleRank","Select the Gene/Drug pair rank to be shown",value = 31)                    
+              ),
+              column(8,
+                     plotOutput("bubble")                    
+              )
+            )
+    ),
+
+    tabItem(tabName = "scatterBoxplot",
           fluidRow(column(6,align="center",
                    br(),
                    uiOutput("selGenedrug"),
@@ -186,15 +202,7 @@ ui <- dashboardPage(
             )
           )
   ),
-  tabItem(tabName = "bubblePlot",
-          fluidRow(
-            column(4,
-                   box('This is the Bubble plot page', title = "Bubble plot",  
-                       status = "primary", solidHeader = TRUE,
-                       collapsed = FALSE, width=12)                    
-            )
-          )
-  ),
+
   tabItem(tabName = "tutorial",
           fluidRow(
             column(4,
@@ -260,19 +268,24 @@ server <- function(input, output,session) {
     updateTabItems(session, "tabs", "tutorial")
   }
   )
+  observeEvent(input$to_next, {
+    updateTabItems(session, "tabs", "applyThresholds")
+  }
+  )  
+
   
+  #Apply Thresholds button
   observeEvent(input$to_bubblePlot, {
     updateTabItems(session, "tabs", "bubblePlot")
   }
   )
   
   observeEvent(input$to_scatterPlot, {
-    updateTabItems(session, "tabs", "applyThresholds")
+    updateTabItems(session, "tabs", "scatterBoxplot")
   }
-  )
-  
+  )  
   # Bubble Plot page buttons
- 
+  
   # Apply thresholds & Scatter/boxplot buttons
   observeEvent(input$to_introduction, {
     updateTabItems(session, "tabs", "backto_introduction")
@@ -355,36 +368,68 @@ server <- function(input, output,session) {
   # Add the ability to download the correlation table
   # Download button appears after clicking on the calculate button using observeEvent and renderUI
   observeEvent(input$cal, {
-    output$download <- renderUI({
+    output$download <- renderUI({ 
       downloadHandler(
         filename = function() {
           "Pearson Correlations and FDRs.tsv"
         },
         content = function(file) {
           vroom::vroom_write(correlations(), file)
-        } 
-      )  
-    })
+        }
+        
+      ) 
+    }) 
+  })
+ 
+  # "Next" button appears when clicking on the "Correlation Calculation" button
+  observeEvent(input$cal, {output$to_next<-renderUI({actionButton("to_next","Next",status="success")})
   })
   
-  # "Apply thresholds and visualization" button appears when clicking on the "Calculate Correlations" button 
-  observeEvent(input$cal, {
-    output$vistab <- renderUI({actionBttn("vistab","Next"
-                                          ,style="pill",color="success",size = "sm")})
+  # "Bubble Plot" and "Scatter/Boxplot" buttons appear when clicking on the "Apply Thresholds" button 
+  observeEvent(input$Thre, {output$to_bubblePlot<-renderUI({actionButton("to_bubblePlot","Bubble Plot",status="success")})
   })
   
-  #When clicking on the "Next" button, the tab switches to
-  #the apply threshold tab
-  observeEvent(input$vistab, {
-    updateTabItems(session, "tabs", selected = "applyThresholds")
+  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionButton("to_scatterPlot","Scatter/Boxplot",status="success")})
   })
   
+  
+
  #Apply thresholds
   sigcors<-eventReactive(input$Thre,{
-  sigcors1<-subset(correlations(), FDR< input$FDRThr & Corr> min(input$PosCorThre))
-  sigcors2<-subset(correlations(), FDR< input$FDRThr & Corr< max(input$NegCorThre))
-  sigcors<-(rbind(sigcors1,sigcors2))
+    sigcors1<-subset(correlations(), FDR< input$FDRThr & Corr> min(input$PosCorThre))
+    sigcors2<-subset(correlations(), FDR< input$FDRThr & Corr< max(input$NegCorThre))
+    sigcors<-(rbind(sigcors1,sigcors2))
   })
+  
+ # Bubble plot
+  Bubbleplot<-reactive({
+  data <- sigcors() %>%
+    rename(STARS=Corr, FDR_NUM=FDR) %>%
+    separate(STARS, into=c('CORR'), sep='\\*', remove=FALSE, extra='drop') %>%
+    mutate(CORR = as.numeric(CORR))
+  
+  bubble_df <- data %>%
+    filter(Drug %in% data$Drug) %>%
+    filter(Gene %in% data$Gene) %>%
+    select(Drug, Gene, CORR, FDR_NUM) %>%
+    mutate(FDR = ifelse(FDR_NUM <= 0.0001, '<=0.0001', 
+                        ifelse(FDR_NUM <= 0.001, '<0.001', 
+                               ifelse(FDR_NUM <= 0.01, '<0.01', 
+                                      ifelse(FDR_NUM <= 0.05, '<0.05', '>0.05'))))) %>%
+    mutate(FDR = factor(FDR, levels=c('>0.05', '<0.05', '<0.01', '<0.001', '<=0.0001'))) %>%
+    mutate(Significant = ifelse(FDR_NUM <= 0.05, '<=0.05', '>0.05')) %>%
+    mutate(Significant = factor(Significant, levels=c('>0.05', '<=0.05'))) %>%
+    rename(Correlation=CORR)
+  
+  limit <- max(abs(bubble_df$Correlation)) * c(-1, 1)
+  ggplot(bubble_df, aes(x=Drug, y=Gene, alpha=Significant, size=FDR, colour=Correlation))+
+    geom_point()+
+    scale_colour_distiller(type = "div", palette='RdBu', limit=limit)+
+    theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  })
+  
+ 
   
   #Provide Gene/Drug pair list for the Drop-down of choosing Gene/Drug pair for the visualization
   sigcors4<-reactive({
@@ -493,8 +538,11 @@ server <- function(input, output,session) {
    })
 
    # Display the correlation table
-  output$cortabs<-DT::renderDT(
-    correlations()
+  output$bubble <-renderPlot(
+    Bubbleplot(),res = 96, height = 800, width = 1000 
+  ) 
+   output$cortabs<-DT::renderDT(
+     correlations()
   )
   output$Sigcors<-DT::renderDT(
     sigcors()
