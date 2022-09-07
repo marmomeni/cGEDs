@@ -403,30 +403,37 @@ server <- function(input, output,session) {
   
  # Bubble plot
   Bubbleplot<-reactive({
-  data <- sigcors() %>%
-    rename(STARS=Corr, FDR_NUM=FDR) %>%
-    separate(STARS, into=c('CORR'), sep='\\*', remove=FALSE, extra='drop') %>%
-    mutate(CORR = as.numeric(CORR))
-  
-  bubble_df <- data %>%
-    filter(Drug %in% data$Drug) %>%
-    filter(Gene %in% data$Gene) %>%
-    select(Drug, Gene, CORR, FDR_NUM) %>%
-    mutate(FDR = ifelse(FDR_NUM <= 0.0001, '<=0.0001', 
-                        ifelse(FDR_NUM <= 0.001, '<0.001', 
-                               ifelse(FDR_NUM <= 0.01, '<0.01', 
-                                      ifelse(FDR_NUM <= 0.05, '<0.05', '>0.05'))))) %>%
-    mutate(FDR = factor(FDR, levels=c('>0.05', '<0.05', '<0.01', '<0.001', '<=0.0001'))) %>%
-    mutate(Significant = ifelse(FDR_NUM <= 0.05, '<=0.05', '>0.05')) %>%
-    mutate(Significant = factor(Significant, levels=c('>0.05', '<=0.05'))) %>%
-    rename(Correlation=CORR)
-  
-  limit <- max(abs(bubble_df$Correlation)) * c(-1, 1)
-  ggplot(bubble_df, aes(x=Drug, y=Gene, alpha=Significant, size=FDR, colour=Correlation))+
-    geom_point()+
-    scale_colour_distiller(type = "div", palette='RdBu', limit=limit)+
-    theme_bw()+
-    theme(axis.text.x = element_text(angle = 45, hjust=1))
+    data <- correlations() %>%
+      rename(STARS=Corr, FDR_NUM=FDR) %>%
+      separate(STARS, into=c('CORR'), sep='\\*', remove=FALSE, extra='drop') %>%
+      mutate(CORR = as.numeric(CORR))
+    
+    fdr_thresh <- 0.05
+    corr_thresh <- 0.7
+    
+    filt <- data %>%
+      filter(FDR_NUM <= fdr_thresh) %>%
+      filter(abs(CORR) >= corr_thresh)
+    
+    bubble_df <- data %>%
+      filter(Drug %in% filt$Drug) %>%
+      filter(Gene %in% filt$Gene) %>%
+      select(Drug, Gene, CORR, FDR_NUM) %>%
+      mutate(FDR = ifelse(FDR_NUM <= 0.0001, '<=0.0001', 
+                          ifelse(FDR_NUM <= 0.001, '<0.001', 
+                                 ifelse(FDR_NUM <= 0.01, '<0.01', 
+                                        ifelse(FDR_NUM <= 0.05, '<0.05', '>0.05'))))) %>%
+      mutate(FDR = factor(FDR, levels=c('>0.05', '<0.05', '<0.01', '<0.001', '<=0.0001'))) %>%
+      mutate(Significant = ifelse(FDR_NUM <= 0.05, '<=0.05', '>0.05')) %>%
+      mutate(Significant = factor(Significant, levels=c('>0.05', '<=0.05'))) %>%
+      rename(Correlation=CORR)
+    
+    limit <- max(abs(bubble_df$Correlation)) * c(-1, 1)
+    ggplot(bubble_df, aes(x=Drug, y=Gene, alpha=Significant, size=FDR, colour=Correlation))+
+      geom_point()+
+      scale_colour_distiller(type = "div", palette='RdBu', limit=limit)+
+      theme_bw()+
+      theme(axis.text.x = element_text(angle = 45, hjust=1))
   })
   
  
