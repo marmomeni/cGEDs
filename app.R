@@ -172,17 +172,15 @@ ui <- dashboardPage(
             
     tabItem(tabName = "bubblePlot",
             fluidRow(
-              column(4,
-                     numericInput("bubbleRank","Select the Gene/Drug pair rank to be shown",value = 31)                    
-              ),
-              column(8,
-                     plotOutput("bubble")                    
+              column(12,align="center",
+                     plotOutput("bubble",width = "auto",height = "auto")                    
               )
             )
     ),
 
     tabItem(tabName = "scatterBoxplot",
-          fluidRow(column(6,align="center",
+          fluidRow(
+            column(6,align="center",
                    br(),
                    uiOutput("selGenedrug"),
                    br(),
@@ -200,8 +198,13 @@ ui <- dashboardPage(
                    br(),
                    plotOutput("scatterplt",width = "100%")
             )
-          )
-  ),
+          ),
+          fluidRow(column(12,align="center",
+                   uiOutput('downloadScatter')
+                   )      
+          ),
+          downloadButton(outputId = "scatterDownload", label = "Download the plot")
+    ),
 
   tabItem(tabName = "tutorial",
           fluidRow(
@@ -408,16 +411,10 @@ server <- function(input, output,session) {
       separate(STARS, into=c('CORR'), sep='\\*', remove=FALSE, extra='drop') %>%
       mutate(CORR = as.numeric(CORR))
     
-    fdr_thresh <- 0.05
-    corr_thresh <- 0.7
-    
-    filt <- data %>%
-      filter(FDR_NUM <= fdr_thresh) %>%
-      filter(abs(CORR) >= corr_thresh)
     
     bubble_df <- data %>%
-      filter(Drug %in% filt$Drug) %>%
-      filter(Gene %in% filt$Gene) %>%
+      filter(Drug %in% sigcors()$Drug) %>%
+      filter(Gene %in% sigcors()$Gene) %>%
       select(Drug, Gene, CORR, FDR_NUM) %>%
       mutate(FDR = ifelse(FDR_NUM <= 0.0001, '<=0.0001', 
                           ifelse(FDR_NUM <= 0.001, '<0.001', 
@@ -545,8 +542,11 @@ server <- function(input, output,session) {
    })
 
    # Display the correlation table
-  output$bubble <-renderPlot(
-    Bubbleplot(),res = 96, height = 800, width = 1000 
+  bubbleHeight<-reactive(unique(sigcors()$Gene)*100+100)
+  bubblewidth<-reactive(unique(sigcors()$Drug)*70+100)
+   
+   output$bubble <-renderPlot(
+    Bubbleplot(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
   ) 
    output$cortabs<-DT::renderDT(
      correlations()
@@ -554,13 +554,23 @@ server <- function(input, output,session) {
   output$Sigcors<-DT::renderDT(
     sigcors()
   )
-  #output$volcanopl<-renderPlot(
-  #  Volcano()
-  #)
-  output$scatterplt<-renderPlot(
-    Scatter(),res = 96, height = 600, width = 600 
-   )
-             
+  
+  
+  #output$scatterplt<-renderPlot(
+  #  Scatter(),res = 96, height = 600, width = 600,
+    #ggsave("plot.pdf",Scatter()) 
+  # )
+  output$scatterplt<-renderPlot(Scatter(),res = 96, height = 600, width = 600)
+  output$scatterdownload <- downloadHandler(
+    filename =  function() {
+      "ScatterPlot.png"
+    },
+    # content is a function with argument file. content writes the plot to the device
+    content = function(file) {
+        png(file) # open the png device
+        print(file,Scatter())
+    } 
+  )
 }
 
 shinyApp(ui = ui, server = server)
