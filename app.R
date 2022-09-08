@@ -168,13 +168,21 @@ ui <- dashboardPage(
               )
               
             )
-    ),
+    ), 
             
     tabItem(tabName = "bubblePlot",
             fluidRow(
+              column(12, align="center",
+                     HTML("<h5>Bubble Plot,  </h5>")
+              ),hr(),
+            ),
+              
+            fluidRow(
               column(12,align="center",
-                     plotOutput("bubble",width = "auto",height = "auto")
-                     
+                     actionButton('plotBubbleplot', label = 'Plot Bubble Plot', status = "success"),
+                     plotOutput("bubble",width = "auto",height = "auto"),
+                     hr(),
+                     uiOutput("bubbledownload", label = "Download")
               )
             )
     ),
@@ -563,17 +571,40 @@ server <- function(input, output,session) {
    output$bubble <-renderPlot(
     Bubbleplot(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
   )
+   
+   
+   observeEvent(input$plotBubbleplot, {
+     # The download button of the scatter plot 
+     output$bubbledownload <-renderUI({ downloadHandler(
+       filename =  function() {
+         "Bubble Plot.png"
+       },
+       # content is a function with argument file. content writes the plot to the device
+       content = function(file) {
+         device <- function(..., width, height) {
+           grDevices::png(..., width = width, height = height,
+                          res = 300, units = "in")}
+         ggsave(file, plot = Bubbleplot(), device = device)
+       } 
+     )
+     })
+   })
+   
+   output$scatterplt<-renderPlot(Scatter(),res = 96, height = 600, width = 600)
+   
+   # The download button of the scatter plot spears after selGenedrug drop-down works
    observeEvent(input$selGenedrug, {
-   output$scatterdownload <-renderUI({ downloadHandler(
+     # The download button of the scatter plot 
+     output$scatterdownload <-renderUI({ downloadHandler(
      filename =  function() {
-       "Bubble Plot.png"
+       "Scatter Plot.png"
      },
      # content is a function with argument file. content writes the plot to the device
      content = function(file) {
        device <- function(..., width, height) {
          grDevices::png(..., width = width, height = height,
                         res = 300, units = "in")}
-       ggsave(file, plot = Bubbleplot(), device = device)
+       ggsave(file, plot = Scatter(), device = device)
      } 
    )
    })
@@ -591,19 +622,8 @@ server <- function(input, output,session) {
   #  Scatter(),res = 96, height = 600, width = 600,
     #ggsave("plot.pdf",Scatter()) 
   # )
-  output$scatterplt<-renderPlot(Scatter(),res = 96, height = 600, width = 600)
-  output$scatterdownload <- downloadHandler(
-    filename =  function() {
-      "ScatterPlot.png"
-    },
-    # content is a function with argument file. content writes the plot to the device
-    content = function(file) {
-      device <- function(..., width, height) {
-        grDevices::png(..., width = width, height = height,
-                       res = 300, units = "in")}
-      ggsave(file, plot = Scatter(), device = device)
-    } 
-  )
+ 
+
 }
 
 shinyApp(ui = ui, server = server)
