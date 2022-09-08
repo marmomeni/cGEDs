@@ -137,7 +137,7 @@ ui <- dashboardPage(
                          actionButton('backto_tutorial', label = 'See Tutorial', status = "success"))
               ),
               column(12, align="center",
-                     HTML("<h5>Apply thresholds to select a Gene/drug pair for Scatter/Boxplot</h5>")
+                     HTML("<h5>Apply thresholds to select the most associated Gene/drug pairs for the visualization</h5>")
               ),
               hr(),
             ),      
@@ -173,12 +173,19 @@ ui <- dashboardPage(
     tabItem(tabName = "bubblePlot",
             fluidRow(
               column(12,align="center",
-                     plotOutput("bubble",width = "auto",height = "auto")                    
+                     plotOutput("bubble",width = "auto",height = "auto")
+                     
               )
             )
     ),
 
     tabItem(tabName = "scatterBoxplot",
+          fluidRow(
+            column(12, align="center",
+                   HTML("<h5>Select among associated gene/drug pairs to be visualized by a scatter plot with a marginal boxplot </h5>")
+            )
+          ),
+            hr(),
           fluidRow(
             column(6,align="center",
                    br(),
@@ -196,14 +203,25 @@ ui <- dashboardPage(
             column(4,align="center",
                    br(),
                    br(),
-                   plotOutput("scatterplt",width = "100%")
+                   plotOutput("scatterplt",width = "100%"),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   uiOutput("scatterdownload", label = "Download")
             )
           ),
           fluidRow(column(12,align="center",
-                   uiOutput('downloadScatter')
+                   #uiOutput('downloadScatter')
+                   hr()
                    )      
-          ),
-          downloadButton(outputId = "scatterDownload", label = "Download the plot")
+          )
+          
     ),
 
   tabItem(tabName = "tutorial",
@@ -540,14 +558,27 @@ server <- function(input, output,session) {
        )
      } 
    })
-
-   # Display the correlation table
-  bubbleHeight<-reactive(unique(sigcors()$Gene)*100+100)
-  bubblewidth<-reactive(unique(sigcors()$Drug)*70+100)
+   
    
    output$bubble <-renderPlot(
     Bubbleplot(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
-  ) 
+  )
+   observeEvent(input$selGenedrug, {
+   output$scatterdownload <-renderUI({ downloadHandler(
+     filename =  function() {
+       "Bubble Plot.png"
+     },
+     # content is a function with argument file. content writes the plot to the device
+     content = function(file) {
+       device <- function(..., width, height) {
+         grDevices::png(..., width = width, height = height,
+                        res = 300, units = "in")}
+       ggsave(file, plot = Bubbleplot(), device = device)
+     } 
+   )
+   })
+   })
+   
    output$cortabs<-DT::renderDT(
      correlations()
   )
@@ -567,8 +598,10 @@ server <- function(input, output,session) {
     },
     # content is a function with argument file. content writes the plot to the device
     content = function(file) {
-        png(file) # open the png device
-        print(file,Scatter())
+      device <- function(..., width, height) {
+        grDevices::png(..., width = width, height = height,
+                       res = 300, units = "in")}
+      ggsave(file, plot = Scatter(), device = device)
     } 
   )
 }
