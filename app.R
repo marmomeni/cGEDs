@@ -105,7 +105,7 @@ ui <- dashboardPage(
                                           "Acute myeloid leukemia (LAML)"),selected=NULL)
                           ,
                           selectizeInput("Genes", "Please enter your desiered genes",
-                                          choices = colnames(ex[,3:54]),multiple=TRUE),
+                                          choices = colnames(ex[,3:50]),multiple=TRUE),
                           useSweetAlert(),
                           actionButton("cal","Calculate Correlations", status="success")
                 ),
@@ -351,6 +351,12 @@ server <- function(input, output,session) {
   correlations<-eventReactive(input$cal,{
     
     # Provide a vector of drug names
+    drugs <- df() %>%
+      select(Drug.name, 'Cell line') %>%
+      group_by(Drug.name) %>%
+      summarise(Num_cell_lines=n()) %>%
+      filter(Num_cell_lines > 2)
+    
     drugs <- unique(df()$Drug.name)
     corrs <- NULL
     
@@ -373,7 +379,7 @@ server <- function(input, output,session) {
       drug_corr <- suppressWarnings(corr.test(drug_df[,5:length(drug_df)], drug_df[,3]
       , method = "pearson",adjust="fdr"))
     
-      new_entry <- data.frame(Corr=drug_corr$r, FDR=drug_corr$p.adj) %>%
+      new_entry <- data.frame(Corr=drug_corr$r, FDR=drug_corr$p) %>%
         mutate(Drug=drugs[i])
       new_entry$Gene <- row.names(new_entry)
       row.names(new_entry) <- NULL
@@ -470,12 +476,13 @@ server <- function(input, output,session) {
   #Drop-down for choosing Gene/Drug pair for the visualization
    observeEvent(input$Thre,{output$selGenedrug<-renderUI({
     selectInput("selGenedrug", "Please choose desiered Gene/Drug pair for the visualization",
-                   choices = sigcors4()$GeneDrug,multiple=FALSE,selected=FALSE)
+                   choices = c("",sigcors4()$GeneDrug),multiple=FALSE,selected=NULL)
   }) })
 
   #Scatter/boxplot
-
+   
    Scatter<-reactive({
+     req(input$selGenedrug)
      drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug) , 3]
      drug_df <- subset(df(), Drug.name == drug)
      gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug), 4])
