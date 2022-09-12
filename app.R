@@ -200,10 +200,8 @@ ui <- dashboardPage(
                    uiOutput("selGenedrug"),
                    br(),
                    br(),
-                   prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
-                                  ,status = "success", outline = TRUE),
-                   prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
-                                  status = "success", outline = TRUE),
+                   uiOutput("scatterLabel"),
+                   uiOutput("ShowBoxplot"),
                    div(id = "Col0"),
                    div(id = "Col1"),
                    div(id = "Col2")
@@ -379,7 +377,7 @@ server <- function(input, output,session) {
       drug_corr <- suppressWarnings(corr.test(drug_df[,5:length(drug_df)], drug_df[,3]
       , method = "pearson",adjust="fdr"))
     
-      new_entry <- data.frame(Corr=drug_corr$r, FDR=drug_corr$p) %>%
+      new_entry <- data.frame(Corr=drug_corr$r, FDR=drug_corr$p.adj) %>%
         mutate(Drug=drugs[i])
       new_entry$Gene <- row.names(new_entry)
       row.names(new_entry) <- NULL
@@ -478,6 +476,16 @@ server <- function(input, output,session) {
     selectInput("selGenedrug", "Please choose desiered Gene/Drug pair for the visualization",
                    choices = c("",sigcors4()$GeneDrug),multiple=FALSE,selected=NULL)
   }) })
+
+   observeEvent(req(outpu$scatterplt),{output$scatterLabel<-renderUI({
+     prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
+                    ,status = "success", outline = TRUE)
+   }) })
+   
+   observeEvent(req(outpu$scatterplt),{output$ShowBoxplot<-renderUI({
+     prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
+                    status = "success", outline = TRUE)
+   }) })
 
   #Scatter/boxplot
    
