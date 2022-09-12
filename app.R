@@ -151,7 +151,7 @@ ui <- dashboardPage(
                        actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))),
               column(5,align="center",offset = 1,
                       wellPanel(DT::DTOutput("Sigcors")),
-                     hr(),
+                     br(),
                      uiOutput("downloadthre")
               )
             ),
@@ -175,15 +175,17 @@ ui <- dashboardPage(
     tabItem(tabName = "bubblePlot",
             fluidRow(
               column(12, align="center",
-                     HTML("<h5>Bubble Plot,  </h5>")
-              ),hr(),
+                     HTML("<h5>Bubble Plot</h5>")
+                     ,hr()
+              ),
             ),
               
             fluidRow(
               column(12,align="center",
                      actionButton('plotBubbleplot', label = 'Plot Bubble Plot', status = "success"),
+                     br(),
                      plotOutput("bubble",width = "auto",height = "auto"),
-                     hr(),
+                     br(),
                      uiOutput("bubbledownload", label = "Download")
               )
             )
@@ -599,10 +601,13 @@ server <- function(input, output,session) {
      } 
    })
    
+   bubbleButton<-eventReactive(input$plotBubbleplot, {
+     Bubbleplot()
+   })
    
    output$bubble <-renderPlot(
-    Bubbleplot(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
-  )
+   bubbleButton(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
+   )
    
    
    observeEvent(input$plotBubbleplot, {
