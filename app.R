@@ -150,7 +150,9 @@ ui <- dashboardPage(
                        br(),
                        actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))),
               column(5,align="center",offset = 1,
-                      wellPanel(DT::DTOutput("Sigcors")), 
+                      wellPanel(DT::DTOutput("Sigcors")),
+                     hr(),
+                     uiOutput("downloadthre")
               )
             ),
             fluidRow(
@@ -432,6 +434,21 @@ server <- function(input, output,session) {
     sigcors1<-subset(correlations(), FDR< input$FDRThr & Corr> min(input$PosCorThre))
     sigcors2<-subset(correlations(), FDR< input$FDRThr & Corr< max(input$NegCorThre))
     sigcors<-(rbind(sigcors1,sigcors2))
+  })
+  
+  # Download button appears after clicking on the apply threshold button using observeEvent and renderUI
+  observeEvent(input$Thre, {
+    output$downloadthre <- renderUI({ 
+      downloadHandler(
+        filename = function() {
+          "Gene/Drug pairs passing the thresholds.tsv"
+        },
+        content = function(file) {
+          vroom::vroom_write(correlations(), file)
+        }
+        
+      ) 
+    }) 
   })
   
  # Bubble plot
