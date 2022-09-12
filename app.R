@@ -472,18 +472,18 @@ server <- function(input, output,session) {
   })
   
   #Drop-down for choosing Gene/Drug pair for the visualization
-   observeEvent(input$Thre,{output$selGenedrug<-renderUI({
+  observeEvent(input$Thre,{output$selGenedrug<-renderUI({
     selectInput("selGenedrug", "Please choose desiered Gene/Drug pair for the visualization",
                    choices = c("",sigcors4()$GeneDrug),multiple=FALSE,selected=NULL)
   }) })
-
-   observeEvent(req(outpu$scatterplt),{output$scatterLabel<-renderUI({
-     prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
+  #Scatter label check box appears after selGenedrug drop-down works
+  observeEvent(req(input$selGenedrug),{output$scatterLabel<-renderUI({
+  prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
                     ,status = "success", outline = TRUE)
    }) })
-   
-   observeEvent(req(outpu$scatterplt),{output$ShowBoxplot<-renderUI({
-     prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
+   # Show box plot check box appears after selGenedrug drop-down works 
+   observeEvent(req(input$selGenedrug),{output$ShowBoxplot<-renderUI({
+   prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
                     status = "success", outline = TRUE)
    }) })
 
@@ -608,7 +608,7 @@ server <- function(input, output,session) {
    output$scatterplt<-renderPlot(Scatter(),res = 96, height = 600, width = 600)
    
    # The download button of the scatter plot spears after selGenedrug drop-down works
-   observeEvent(input$selGenedrug, {
+   observeEvent(req(input$selGenedrug), {
      # The download button of the scatter plot 
      output$scatterdownload <-renderUI({ downloadHandler(
      filename =  function() {
