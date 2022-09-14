@@ -20,7 +20,7 @@ ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression
 
 
 ui <- dashboardPage(
-  header <- dashboardHeader(title = dashboardBrand(title = "cGEDs app")
+  header <- dashboardHeader(title = dashboardBrand(title = "cGEDs App")
   ),
   sidebar <- dashboardSidebar(
     sidebarMenu(
