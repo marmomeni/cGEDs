@@ -29,7 +29,7 @@ ui <- dashboardPage(
       menuItem(text=tags$div("Data Selelection &",tags$br(), "Correlation Calculation",style= "display: inline-block;vertical-align:middle"), tabName = "dataSelection",icon = icon('mouse-pointer')),
       menuItem("Apply thresholds", tabName = "applyThresholds",icon=icon('sliders-h')),
       menuItem("Bubble Plot", tabName = "bubblePlot",icon = icon('chart-line')),
-      menuItem("Scatter/Boxplot", tabName = "scatterBoxplot",icon = icon('chart-line')),
+      menuItem("Scatter-Boxplot", tabName = "scatterBoxplot",icon = icon('chart-line')),
       menuItem("Tutorial", tabName = "tutorial",icon = icon('file-video')),
       menuItem("FAQs", icon = icon("question-circle"), tabName = "faq"),
       menuItem("Contact", tabName = "contact", icon = icon("users")),
@@ -104,7 +104,7 @@ ui <- dashboardPage(
                                           "Cervical squamous cell carcinoma and endocervical adenocarcinoma (CESC)",
                                           "Acute myeloid leukemia (LAML)"),selected=NULL)
                           ,
-                          selectizeInput("Genes", "Please enter your desiered genes",
+                          selectizeInput("Genes", "Enter your desiered genes",
                                           choices = colnames(ex[,3:50]),multiple=TRUE),
                           useSweetAlert(),
                           actionButton("cal","Calculate Correlations", status="success")
@@ -137,16 +137,16 @@ ui <- dashboardPage(
                          actionButton('backto_tutorial', label = 'See Tutorial', status = "success"))
               ),
               column(12, align="center",
-                     HTML("<h5>Apply thresholds to select the most associated Gene/drug pairs for the visualization</h5>")
+                     HTML("<h5>Apply thresholds to select the most associated Gene-drug pairs for the visualization</h5>")
               ),
               hr(),
             ),      
             fluidRow(
               column(4,align="center",offset = 1,
-                     numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+                     numericInput("FDRThr","Choose Gene-drug pairs with FDRs less than:", value = 0.05),
                      wellPanel(
-                       sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
-                       sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
+                       sliderInput("PosCorThre", "Choose Gene-drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
+                       sliderInput("NegCorThre", "Choose Gene-drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
                        br(),
                        actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))),
               column(5,align="center",offset = 1,
@@ -184,6 +184,7 @@ ui <- dashboardPage(
               column(12,align="center",
                      actionButton('plotBubbleplot', label = 'Plot Bubble Plot', status = "success"),
                      br(),
+                     br(),
                      plotOutput("bubble",width = "auto",height = "auto"),
                      br(),
                      uiOutput("bubbledownload", label = "Download")
@@ -194,7 +195,7 @@ ui <- dashboardPage(
     tabItem(tabName = "scatterBoxplot",
           fluidRow(
             column(12, align="center",
-                   HTML("<h5>Select among associated gene/drug pairs to be visualized by a scatter plot with a marginal boxplot </h5>")
+                   HTML("<h5>Select among the most associated gene-drug pairs to be visualized by a scatter plot with a marginal boxplot </h5>")
             )
           ),
             hr(),
@@ -317,7 +318,7 @@ server <- function(input, output,session) {
   )  
   # Bubble Plot page buttons
   
-  # Apply thresholds & Scatter/boxplot buttons
+  # Apply thresholds & Scatter-boxplot buttons
   observeEvent(input$to_introduction, {
     updateTabItems(session, "tabs", "backto_introduction")
   }
@@ -353,6 +354,7 @@ server <- function(input, output,session) {
   correlations<-eventReactive(input$cal,{
     
     # Provide a vector of drug names
+    # Remove drugs with less than two cell lines
     drugs <- df() %>%
       select(Drug.name, 'Cell line') %>%
       group_by(Drug.name) %>%
@@ -426,7 +428,7 @@ server <- function(input, output,session) {
   observeEvent(input$Thre, {output$to_bubblePlot<-renderUI({actionButton("to_bubblePlot","Bubble Plot",status="success")})
   })
   
-  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionButton("to_scatterPlot","Scatter/Boxplot",status="success")})
+  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionButton("to_scatterPlot","Scatter-Boxplot",status="success")})
   })
   
   
@@ -506,7 +508,7 @@ server <- function(input, output,session) {
                     status = "success", outline = TRUE)
    }) })
 
-  #Scatter/boxplot
+  #Scatter-boxplot
    
    Scatter<-reactive({
      req(input$selGenedrug)
@@ -555,7 +557,7 @@ server <- function(input, output,session) {
      }
    })
    
-   # ObserveEvent functions related to selecting the color of scatter/boxplots
+   # ObserveEvent functions related to selecting the color of scatter-boxplots
    observeEvent(input$ShowBoxplot,{
      if (input$ShowBoxplot==TRUE){
        insertUI(
@@ -601,9 +603,11 @@ server <- function(input, output,session) {
      } 
    })
    
+   # The bubble plot appears after clicking on plot bubble plot button
    bubbleButton<-eventReactive(input$plotBubbleplot, {
      Bubbleplot()
    })
+   
    
    output$bubble <-renderPlot(
    bubbleButton(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
