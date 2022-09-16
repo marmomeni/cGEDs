@@ -64,9 +64,7 @@ ui <- dashboardPage(
          fluidPage(
                 column(12,
                        div(style = "display:inline; float:left",
-                           actionButton('to_introduction', label = 'Home', status = "success")),
-                       div(style = "display:inline-block; float:right",
-                           actionButton('to_tutorial', label = 'See Tutorial', status = "success"))
+                           actionButton('to_introduction', label = 'Back', status = "success"))
                 ),
                 column(12, align="center",
                        HTML("<h5>Choose from the options given to begin</h5>")
@@ -82,10 +80,11 @@ ui <- dashboardPage(
                          div(style = "display:inline-block; ",
                              dropMenu(
                                circleButton("Info",status = "default",size = "xs", icon = icon('info')),
-                               h5(strong('You can choose the drug sensitivity and gene expression data from these publicly available datasets to be used:')),
+                               h6(strong('You can choose the drug sensitivity and gene expression dataset among these publicly available datasets:')),
                                br(),
-                               h5('GDSC1: 970 Cell lines and 403 Compounds'),
-                               h5('GDSC2: 969 Cell lines and 297 Compounds'),
+                               h6('GDSC1: 970 Cell lines and 403 Compounds'),
+                               h6('GDSC2: 969 Cell lines and 297 Compounds'),
+                               placement = "right",
                                arrow = TRUE)
                          )
                        ),
@@ -144,9 +143,7 @@ ui <- dashboardPage(
             fluidPage(
               column(12,
                      div(style = "display:inline-block; float:left",
-                         actionButton('backto_introduction', label = 'Home', status = "success")),
-                     div(style = "display:inline-block; float:right",
-                         actionButton('backto_tutorial', label = 'See Tutorial', status = "success"))
+                         actionButton('to_selectData', label = 'Back', status = "success"))
               ),
               column(12, align="center",
                      HTML("<h5>Apply thresholds to select the most associated Gene-drug pairs for the visualization</h5>")
@@ -305,13 +302,10 @@ server <- function(input, output,session) {
   
   # Data Selection & Correlation Calculation Buttons
   observeEvent(input$to_introduction, {
-    updateTabItems(session, "tabs", "dataSelection")
+    updateTabItems(session, "tabs", "introduction")
   }
   )
-  observeEvent(input$to_tutorial, {
-    updateTabItems(session, "tabs", "tutorial")
-  }
-  )
+
   observeEvent(input$to_next, {
     updateTabItems(session, "tabs", "applyThresholds")
   }
@@ -328,6 +322,12 @@ server <- function(input, output,session) {
     updateTabItems(session, "tabs", "scatterBoxplot")
   }
   )  
+  
+  observeEvent(input$to_selectData, {
+    updateTabItems(session, "tabs", "dataSelection")
+  }
+  )  
+  
   # Bubble Plot page buttons
   
   # Apply thresholds & Scatter-boxplot buttons
@@ -335,10 +335,6 @@ server <- function(input, output,session) {
     updateTabItems(session, "tabs", "backto_introduction")
   }
   )
-  observeEvent(input$to_tutorial, {
-    updateTabItems(session, "tabs", "backto_tutorial")
-  }
-  )   
   
 # Dataset and cancer type selection by the user
   dataselect<-reactive({
