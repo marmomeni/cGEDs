@@ -63,7 +63,7 @@ ui <- dashboardPage(
       tabItem(tabName = "dataSelection",
          fluidPage(
                 column(12,
-                       div(style = "display:inline-block; float:left",
+                       div(style = "display:inline; float:left",
                            actionButton('to_introduction', label = 'Home', status = "success")),
                        div(style = "display:inline-block; float:right",
                            actionButton('to_tutorial', label = 'See Tutorial', status = "success"))
@@ -75,8 +75,20 @@ ui <- dashboardPage(
           ),          
           fluidRow(
                 column(4,align="center",offset = 1,
-                         selectInput("dataset","Select a drug sensitivity and gene expression dataset",
-                                choices=c("GDSC1","GDSC2"),selected=NULL),
+                       span(
+                         div(style = "display:inline-block;",(selectInput("dataset","Select a drug sensitivity and gene expression dataset",
+                                     choices=c("GDSC1","GDSC2"),selected=NULL))
+                         ),
+                         div(style = "display:inline-block; ",
+                             dropMenu(
+                               circleButton("Info",status = "default",size = "xs", icon = icon('info')),
+                               h5(strong('You can choose the drug sensitivity and gene expression data from these publicly available datasets to be used:')),
+                               br(),
+                               h5('GDSC1: 970 Cell lines and 403 Compounds'),
+                               h5('GDSC2: 969 Cell lines and 297 Compounds'),
+                               arrow = TRUE)
+                         )
+                       ),
                          selectInput("cancer","Select a cancer type",
                                 choices=c("Brain lower grade glioma (LGG)",
                                           "Kidney renal clear cell carcinoma (KIRC)",
