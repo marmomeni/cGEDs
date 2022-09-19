@@ -13,6 +13,10 @@ library(shinyWidgets)
 library(shinyjs)
 library(dplyr)
 
+plot1 <- "www/bb_plot.png"
+plot2 <- "www/scatter_plot.png"
+clogo <- "www/logo.jpg"
+hlogo <- "www/header_logo.jpg"
 
 dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
 dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
