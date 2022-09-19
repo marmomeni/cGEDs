@@ -27,7 +27,7 @@ ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")# Gene Expression
 ui <- bs4DashPage(
   freshTheme = create_theme(
     bs4dash_vars(
-      navbar_light_color = "#001219" #three line expand button colour
+      navbar_light_color = "#669090" #three line expand button colour
       #three line expand button colour after clicking
     ),
     bs4dash_yiq(
@@ -35,21 +35,22 @@ ui <- bs4DashPage(
       text_dark = "#FFFF82" #SIDEBAR AND jumbotron text colour
     ),
     bs4dash_layout(
-      main_bg = "#B5D99C" #BG color of page
+      main_bg = "#ffe5d0" #BG color of page #B5D99C
     ),
     bs4dash_sidebar_light(
-      bg = "#1b4f60", #SIDEBAR BG COLOR
-      color = "#FFFF82", # nonselected tabs text color
-      hover_color = "#FFFF82" #text color on hover
+      bg = "#005959
+", #SIDEBAR BG COLOR #1b4f60
+      color = "#fff1d0", # nonselected tabs text color#FFFF82
+      hover_color = "#ffffff" #text color on hover
     ),
     bs4dash_status(
-      primary = "#B5D99C", #jumbotron bg
-      danger = "#417C78", light = "#001219", warning = "#416a87",
-      success = "#aacc00"
+      primary = "#669090", #BG color of selected tab
+      danger = "#ffffff", light = "#ffffff", warning = "#008080",
+      success = "#aacc00"    #416a87
     ),
     bs4dash_color(
       gray_900 = "#0F0326", #text color on other pages
-      white = "#F5F7DC" #header footer color
+      white = "#669090" #header footer color #F5F7DC
       
     )
   ),
@@ -163,7 +164,7 @@ ui <- bs4DashPage(
                             ),
                             div(style = "display:inline-block; ",
                                 dropMenu(
-                                  circleButton("Info",status = "default",size = "xs", icon = icon('info')),
+                                  circleButton("Info",status = "warning",size = "xs", icon = icon('info')),
                                   h6(strong('You can choose the drug sensitivity and gene expression dataset among these publicly available datasets:')),
                                   br(),
                                   h6('GDSC1: 970 Cell lines and 403 Compounds'),
