@@ -3,4 +3,4 @@
 .Rhistory
 .RData
 .Ruserdata
-*.csv
+www/Gene-expression-data-GDSC.csv
