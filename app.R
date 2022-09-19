@@ -143,18 +143,12 @@ ui <- bs4DashPage(
                    column(12,
                           div(style = "display:inline-block; float:left",
                               actionBttn('backto_introduction', label = 'Back', 
-                                         style = "bordered",
-                                         color = "danger",
+                                         style = "gradient",
+                                         color = "success",
                                          size = "md",
                                          block = FALSE,
                                          no_outline = TRUE)),
-                          div(style = "display:inline-block; float:right",
-                              actionBttn('to_thresh', label = 'Next', 
-                                         style = "bordered",
-                                         color = "danger",
-                                         size = "md",
-                                         block = FALSE,
-                                         no_outline = TRUE))
+                      
                    ),
                    column(12, align="center",
                           HTML("<h5>Choose from the options given to begin</h5>")
@@ -210,7 +204,7 @@ ui <- bs4DashPage(
                           useSweetAlert(),
                           actionBttn("cal","Calculate Correlations", 
                                      style = "gradient",
-                                     color = "danger",
+                                     color = "success",
                                      size = "md",
                                      block = FALSE,
                                      no_outline = TRUE)
@@ -239,7 +233,12 @@ ui <- bs4DashPage(
             fluidPage(
               column(12,
                      div(style = "display:inline-block; float:left",
-                         actionButton('to_selectData', label = 'Back', status = "success"))
+                         actionBttn('backto_dataSelection', label = 'Back', 
+                                    style = "gradient",
+                                    color = "success",
+                                    size = "md",
+                                    block = FALSE,
+                                    no_outline = TRUE))
               ),
               column(12, align="center",
                      HTML("<h5>Apply thresholds to select the most associated Gene-drug pairs for the visualization</h5>")
@@ -253,7 +252,7 @@ ui <- bs4DashPage(
                        sliderInput("PosCorThre", "Choose Gene-drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
                        sliderInput("NegCorThre", "Choose Gene-drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
                        br(),
-                       actionBttn("Thre","Apply Thresholds",style="pill",color="success",size = "sm"))),
+                       actionBttn("Thre","Apply Thresholds",style="gradient",color="success",size = "md"))),
               column(5,align="center",offset = 1,
                       wellPanel(DT::DTOutput("Sigcors")),
                      br(),
@@ -287,7 +286,7 @@ ui <- bs4DashPage(
               
             fluidRow(
               column(12,align="center",
-                     actionButton('plotBubbleplot', label = 'Plot Bubble Plot', status = "success"),
+                     actionBttn('plotBubbleplot', label = 'Plot Bubble Plot', style = "gradient",color = "success"),
                      br(),
                      br(),
                      plotOutput("bubble",width = "auto",height = "auto"),
@@ -414,16 +413,17 @@ server <- function(input, output,session) {
   
   # Data Selection & Correlation Calculation Buttons
 
-  observeEvent(input$to_introduction, {
+  observeEvent(input$backto_introduction, {
     updateTabItems(session, "tabs", "introduction")
 
   }
   )
-
+  
   observeEvent(input$to_next, {
     updateTabItems(session, "tabs", "applyThresholds")
+    
   }
-  )  
+  )
   
   #Apply Thresholds button
   observeEvent(input$backto_dataSelection, {
@@ -560,15 +560,15 @@ server <- function(input, output,session) {
   })
   
   # "Next" button appears when clicking on the "Correlation Calculation" button
-  observeEvent(input$cal, {output$to_next<-renderUI({actionBttn("to_next","Next",status="danger")})
+  observeEvent(input$cal, {output$to_next<-renderUI({actionBttn("to_next","Next",style="gradient",color ="success")})
   })
   
   # "Bubble Plot" and "Scatter/Boxplot" buttons appear when clicking on the "Apply Thresholds" button 
-  observeEvent(input$Thre, {output$to_bubblePlot<-renderUI({actionBttn("to_bubblePlot","Bubble Plot",status="danger")})
+  observeEvent(input$Thre, {output$to_bubblePlot<-renderUI({actionBttn("to_bubblePlot","Bubble Plot",style="gradient",color ="success")})
   })
   
 
-  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionButton("to_scatterPlot","Scatter-Boxplot",status="success")})
+  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionBttn("to_scatterPlot","Scatter-Boxplot",style="gradient",color ="success")})
 
   })
   
