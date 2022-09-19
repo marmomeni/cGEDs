@@ -129,7 +129,7 @@ ui <- bs4DashPage(
                           bs4Carousel(id = 'homepageplots', 
                                       bs4CarouselItem(hlogo, caption = NULL, active = TRUE),
                                       bs4CarouselItem(plot1, caption = NULL, active = FALSE),
-                                      bs4CarouselItem(PLOT2, caption = NULL, active = FALSE),
+                                      #bs4CarouselItem(PLOT2, caption = NULL, active = FALSE),
                                       indicators = TRUE, width = 12, .list = NULL)
                    )
                  )
