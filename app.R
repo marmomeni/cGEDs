@@ -20,7 +20,7 @@ hlogo <- "www/header_logo.jpg"
 
 dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
 dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
-ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression 
+ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")# Gene Expression 
 
 
 ui <- dashboardPage(
