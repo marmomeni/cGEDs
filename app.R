@@ -163,8 +163,21 @@ ui <- bs4DashPage(
                  ),          
                  fluidRow(
                    column(4,align="center",offset = 1,
-                          selectInput("dataset","Select a drug sensitivity and gene expression dataset",
-                                      choices=c("GDSC1","GDSC2"),selected=NULL),
+                          span(
+                            div(style = "display:inline-block;",(selectInput("dataset","Select a drug sensitivity and gene expression dataset",
+                                                                             choices=c("GDSC1","GDSC2"),selected=NULL))
+                            ),
+                            div(style = "display:inline-block; ",
+                                dropMenu(
+                                  circleButton("Info",status = "default",size = "xs", icon = icon('info')),
+                                  h6(strong('You can choose the drug sensitivity and gene expression dataset among these publicly available datasets:')),
+                                  br(),
+                                  h6('GDSC1: 970 Cell lines and 403 Compounds'),
+                                  h6('GDSC2: 969 Cell lines and 297 Compounds'),
+                                  placement = "right",
+                                  arrow = TRUE)
+                            )
+                          ),
                           selectInput("cancer","Select a cancer type",
                                       choices=c("Brain lower grade glioma (LGG)",
                                                 "Kidney renal clear cell carcinoma (KIRC)",
