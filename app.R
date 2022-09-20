@@ -50,7 +50,7 @@ ui <- bs4DashPage(
     ),
     bs4dash_color(
       gray_900 = "#0F0326", #text color on other pages
-      white = "#669090" #header footer color #F5F7DC
+      white = "#c3ad97" #header footer color #F5F7DC
       
     )
   ),
