@@ -26,7 +26,7 @@ ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression
 ui <- bs4DashPage(
   freshTheme = create_theme(
     bs4dash_vars(
-      navbar_light_color = "#001219" #three line expand button colour
+      navbar_light_color = "#669090" #three line expand button colour
       #three line expand button colour after clicking
     ),
     bs4dash_yiq(
@@ -34,25 +34,25 @@ ui <- bs4DashPage(
       text_dark = "#FFFF82" #SIDEBAR AND jumbotron text colour
     ),
     bs4dash_layout(
-      main_bg = "#B5D99C" #BG color of page
+      main_bg = "#ffe5d0" #BG color of page #B5D99C
     ),
     bs4dash_sidebar_light(
-      bg = "#1b4f60", #SIDEBAR BG COLOR
-      color = "#FFFF82", # nonselected tabs text color
-      hover_color = "#FFFF82" #text color on hover
+      bg = "#005959", #SIDEBAR BG COLOR #1b4f60
+      color = "#fff1d0", # nonselected tabs text color#FFFF82
+      hover_color = "#ffffff" #text color on hover
     ),
     bs4dash_status(
-      primary = "#B5D99C", #jumbotron bg
-      danger = "#417C78", light = "#001219", warning = "#416a87",
-      success = "#aacc00"
+      primary = "#669090", #BG color of selected tab
+      danger = "#ffffff", light = "#ffffff", warning = "#008080",
+      success = "#aacc00"    
     ),
     bs4dash_color(
       gray_900 = "#0F0326", #text color on other pages
-      white = "#F5F7DC" #header footer color
+      white = "#c3ad97" #header footer color #F5F7DC
       
     )
   ),
-  title = bs4DashBrand(title = "cGEDs", 
+  title = bs4DashBrand(title = "cGEDs App", 
                        color = 'success', 
                        opacity = 1, 
                        tags$img(clogo),
@@ -129,8 +129,10 @@ ui <- bs4DashPage(
                           bs4Carousel(id = 'homepageplots', 
                                       bs4CarouselItem(hlogo, caption = NULL, active = TRUE),
                                       bs4CarouselItem(plot1, caption = NULL, active = FALSE),
-                                      bs4CarouselItem(PLOT2, caption = NULL, active = FALSE),
-                                      indicators = TRUE, width = 12, .list = NULL)
+                                      bs4CarouselItem(plot2, caption = NULL, active = FALSE),
+                                      indicators = TRUE, width = 12, .list = NULL),
+                          hr(),
+                          HTML("<h4>cGEDs is an application for finding associations between genes and drugs. <p><h5>You can enter a list of genes and choose a cancer type, and the app calculates the Pearson correlation coefficient between the gene expression of the genes and the IC50 of drugs in cell lines related to the selected cancer type. Then, you can apply correlation and FDR thresholds to filter out the best gene-drug pairs for visualization. After that, cGEDs provides you with a bubble plot and a scatter plot paired with a marginal box plot for the most associated gene-drug pairs in the desired cancer type.")
                    )
                  )
       ),
@@ -238,11 +240,11 @@ ui <- bs4DashPage(
                    ),
                    hr(),
                  ),      
-                 fluidRow(status = 'danger',
+                 fluidRow(
                           column(4,align="center",offset = 1,
-                                 numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
-                                 chooseSliderSkin(skin = 'Shiny'),
                                  wellPanel(
+                                   numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+                                   chooseSliderSkin(skin = 'Round'),
                                    status = 'danger',
                                    sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
                                    sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
@@ -408,8 +410,8 @@ ui <- bs4DashPage(
   controlbar = NULL,
   skin = 'light',
   footer = bs4DashFooter(
-    left = a(href = "https://github.com/mentorchains/RShiny2022-CGDS","@BI-STEM-Away"), 
-    right = "This app is created by STEM-Away RShiny Project Team - Session 1, 2022",
+    left = HTML("<a href='https://github.com/STEM-Away-RShiny-app-project/cGEDs' style = 'color:#FFFFFF'>@BI-STEM-Away</a>"),
+    right = HTML("<a href='https://github.com/STEM-Away-RShiny-app-project/cGEDs' style = 'color:#FFFFFF'>This app is created by STEM-Away RShiny Project Team - Session 1, 2022</a>"),
     fixed = FALSE),
   preloader = NULL,
   options = NULL,
