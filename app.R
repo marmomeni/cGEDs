@@ -12,17 +12,16 @@ library(colourpicker)
 library(shinyWidgets)
 library(shinyjs)
 library(dplyr)
+library(slickR)
 
-
-
-plot1 <- "www/bb_plot.png"
-plot2 <- "www/scatter_plot.png"
+plot1 <- "www/plots_combined.png"
+plot2 <- "www/home_des.png"
 clogo <- "www/logo.jpg"
 hlogo <- "www/header_logo.jpg"
 
 dsGDSC1<-vroom::vroom("www/Drug-sensitivity-data-GDSC1.csv")
 dsGDSC2<-vroom::vroom("www/Drug-sensitivity-data-GDSC2.csv")
-ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")# Gene Expression 
+ex<-vroom::vroom("www/Gene-expression-data-GDSC.csv ")#Gene Expression 
 
 ui <- bs4DashPage(
   freshTheme = create_theme(
@@ -38,15 +37,14 @@ ui <- bs4DashPage(
       main_bg = "#ffe5d0" #BG color of page #B5D99C
     ),
     bs4dash_sidebar_light(
-      bg = "#005959
-", #SIDEBAR BG COLOR #1b4f60
+      bg = "#005959", #SIDEBAR BG COLOR #1b4f60
       color = "#fff1d0", # nonselected tabs text color#FFFF82
       hover_color = "#ffffff" #text color on hover
     ),
     bs4dash_status(
       primary = "#669090", #BG color of selected tab
       danger = "#ffffff", light = "#ffffff", warning = "#008080",
-      success = "#aacc00"    #416a87
+      success = "#aacc00"    
     ),
     bs4dash_color(
       gray_900 = "#0F0326", #text color on other pages
@@ -54,7 +52,7 @@ ui <- bs4DashPage(
       
     )
   ),
-  title = bs4DashBrand(title = "cGEDs", 
+  title = bs4DashBrand(title = "cGEDs App", 
                        color = 'success', 
                        opacity = 1, 
                        tags$img(clogo),
@@ -62,9 +60,7 @@ ui <- bs4DashPage(
   header = bs4DashNavbar(
     title = NULL,
     div(style = "margin-left:auto;margin-right:auto; text-align:center; color:#001219",
-        HTML('<h4>cGEDs:  Cancer Gene-Expression & Drug-Sensitivity App'),
-        tags$img(clogo,
-                 class = "image")
+        HTML('<h4>cGEDs:  Cancer Gene-Expression & Drug-Sensitivity App')
     ),
     fixed = FALSE,
     border = TRUE
@@ -75,7 +71,6 @@ ui <- bs4DashPage(
     hr(),
     bs4SidebarMenu(
       id = "tabs",
-
       bs4SidebarMenuItem("Home Page", tabName = "introduction",icon = icon("home")),
       bs4SidebarMenuItem(text=tags$div("Data Selelection &",tags$br(), "Correlation Calculation",
                                        style= "display: inline-block;vertical-align:middle"),
@@ -94,7 +89,6 @@ ui <- bs4DashPage(
     minified = TRUE,
     expandOnHover = TRUE,
     fixed = TRUE,
-
   ),
   body <- bs4DashBody(
     skin = 'light',
@@ -130,26 +124,34 @@ ui <- bs4DashPage(
                                                       no_outline = TRUE)
                                        )
                           ),
-                          bs4Carousel(id = 'homepageplots', 
-                                      bs4CarouselItem(hlogo, caption = NULL, active = TRUE),
-                                      bs4CarouselItem(plot1, caption = NULL, active = FALSE),
-                                      #bs4CarouselItem(PLOT2, caption = NULL, active = FALSE),
-                                      indicators = TRUE, width = 12, .list = NULL)
+                          hr(),
+                          HTML("<h4>cGEDs is an application for finding associations between genes and drugs."),
+                          hr(),
+                          slickR(obj = c(plot1,plot2) ,height = 450, width = "96%") +
+                            settings(dots = TRUE, autoplay = TRUE, autoplaySpeed = 2000),
+                          
+                          hr()
+                          
                    )
                  )
       ),
-
       bs4TabItem(tabName = "dataSelection",
                  fluidPage(
                    column(12,
                           div(style = "display:inline-block; float:left",
                               actionBttn('backto_introduction', label = 'Back', 
-                                         style = "gradient",
-                                         color = "success",
+                                         style = "bordered",
+                                         color = "danger",
                                          size = "md",
                                          block = FALSE,
                                          no_outline = TRUE)),
-                      
+                          div(style = "display:inline-block; float:right",
+                              actionBttn('to_thresh', label = 'Next', 
+                                         style = "bordered",
+                                         color = "danger",
+                                         size = "md",
+                                         block = FALSE,
+                                         no_outline = TRUE))
                    ),
                    column(12, align="center",
                           HTML("<h5>Choose from the options given to begin</h5>")
@@ -158,21 +160,8 @@ ui <- bs4DashPage(
                  ),          
                  fluidRow(
                    column(4,align="center",offset = 1,
-                          span(
-                            div(style = "display:inline-block;",(selectInput("dataset","Select a drug sensitivity and gene expression dataset",
-                                                                             choices=c("GDSC1","GDSC2"),selected=NULL))
-                            ),
-                            div(style = "display:inline-block; ",
-                                dropMenu(
-                                  circleButton("Info",status = "warning",size = "xs", icon = icon('info')),
-                                  h6(strong('You can choose the drug sensitivity and gene expression dataset among these publicly available datasets:')),
-                                  br(),
-                                  h6('GDSC1: 970 Cell lines and 403 Compounds'),
-                                  h6('GDSC2: 969 Cell lines and 297 Compounds'),
-                                  placement = "right",
-                                  arrow = TRUE)
-                            )
-                          ),
+                          selectInput("dataset","Select a drug sensitivity and gene expression dataset",
+                                      choices=c("GDSC1","GDSC2"),selected=NULL),
                           selectInput("cancer","Select a cancer type",
                                       choices=c("Brain lower grade glioma (LGG)",
                                                 "Kidney renal clear cell carcinoma (KIRC)",
@@ -201,11 +190,10 @@ ui <- bs4DashPage(
                                                 "Acute myeloid leukemia (LAML)"),selected=NULL),
                           selectizeInput("Genes", "Please enter your desiered genes",
                                          choices = colnames(ex[,3:54]),multiple=TRUE),
-
                           useSweetAlert(),
                           actionBttn("cal","Calculate Correlations", 
                                      style = "gradient",
-                                     color = "success",
+                                     color = "danger",
                                      size = "md",
                                      block = FALSE,
                                      no_outline = TRUE)
@@ -229,161 +217,200 @@ ui <- bs4DashPage(
                    )
                  )         
       ),
-     
-    bs4TabItem(tabName = "applyThresholds",
-            fluidPage(
-              column(12,
-                     div(style = "display:inline-block; float:left",
-                         actionBttn('backto_dataSelection', label = 'Back', 
-                                    style = "gradient",
-                                    color = "success",
-                                    size = "md",
-                                    block = FALSE,
-                                    no_outline = TRUE))
-              ),
-              column(12, align="center",
-                     HTML("<h5>Apply thresholds to select the most associated Gene-drug pairs for the visualization</h5>")
-              ),
-              hr(),
-            ),      
-            fluidRow(
-              column(4,align="center",offset = 1,
-                     numericInput("FDRThr","Choose Gene-drug pairs with FDRs less than:", value = 0.05),
-                     wellPanel(
-                       sliderInput("PosCorThre", "Choose Gene-drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
-                       sliderInput("NegCorThre", "Choose Gene-drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
-                       br(),
-                       actionBttn("Thre","Apply Thresholds",style="gradient",color="success",size = "md"))),
-              column(5,align="center",offset = 1,
-                      wellPanel(DT::DTOutput("Sigcors")),
-                     br(),
-                     uiOutput("downloadthre")
-              )
-            ),
-            fluidRow(
-              column(12,
-                     hr()
-              )
-            ),
-            fluidPage(
-              column(12,align="center",
-                     br(),
-                     div(style ="display:inline-block", 
-                         uiOutput('to_scatterPlot')),
-                     div(style ="display:inline-block", 
-                         uiOutput('to_bubblePlot'))
-              )
-              
-            )
-    ), 
-            
-    bs4TabItem(tabName = "bubblePlot",
-            fluidRow(
-              column(12, align="center",
-                     HTML("<h5>Bubble Plot</h5>")
-                     ,hr()
-              ),
-            ),
-              
-            fluidRow(
-              column(12,align="center",
-                     actionBttn('plotBubbleplot', label = 'Plot Bubble Plot', style = "gradient",color = "success"),
-                     br(),
-                     br(),
-                     plotOutput("bubble",width = "auto",height = "auto"),
-                     br(),
-                     uiOutput("bubbledownload", label = "Download")
-              )
-            )
-    ),
-
-    bs4TabItem(tabName = "scatterBoxplot",
-          fluidRow(
-            column(12, align="center",
-                   HTML("<h5>Select among the most associated gene-drug pairs to be visualized by a scatter plot with a marginal boxplot </h5>")
-            )
-          ),
-            hr(),
-          fluidRow(
-            column(6,align="center",
-                   br(),
-                   uiOutput("selGenedrug"),
-                   br(),
-                   br(),
-                   uiOutput("scatterLabel"),
-                   uiOutput("ShowBoxplot"),
-                   div(id = "Col0"),
-                   div(id = "Col1"),
-                   div(id = "Col2")
-            ),
-            column(4,align="center",
-                   br(),
-                   br(),
-                   plotOutput("scatterplt",width = "100%"),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   uiOutput("scatterdownload", label = "Download")
-            )
-          ),
-          fluidRow(column(12,align="center",
-                   #uiOutput('downloadScatter')
-                   hr()
-                   )      
-          )
-          
-    ),
-
-    bs4TabItem(tabName = "tutorial",
-          fluidRow(
-            column(4,
-                   box('This is the tutorial page', title = "tutorial",  
-                       status = "primary", solidHeader = TRUE,
-                       collapsed = FALSE, width=12)                    
-            )
-          )
-  ),
-  bs4TabItem(tabName = "faq",
-          fluidRow(
-            column(4,
-                   box('Questions here', title = "FAQ Page",  
-                       status = "primary", solidHeader = TRUE, collapsible = T,
-                       collapsed = FALSE, width=12)                    
-            )
-          )
-  ),
-  bs4TabItem(tabName = "contact",
-          fluidRow(
-            column(4,
-                   box('contact', title = "Contact us",  
-                       status = "primary", solidHeader = TRUE, collapsible = T,
-                       collapsed = FALSE, width=12)                    
-            )
-          )
-  ),
-  bs4TabItem(tabName = "meetteam",
-          fluidRow(
-            column(4,
-                   box('content goes here', title = "The team",  
-                       status = "primary", solidHeader = TRUE, collapsible = T,
-                       collapsed = FALSE, width=12)                    
-            )
-          )
-       )
-
+      bs4TabItem(tabName = "applyThresholds",
+                 fluidPage(
+                   column(12,
+                          div(style = "display:inline-block; float:left",
+                              actionBttn('backto_dataSelection', label = 'Back', 
+                                         style = "bordered",
+                                         color = "danger",
+                                         size = "md",
+                                         block = FALSE,
+                                         no_outline = TRUE)),
+                          div(style = "display:inline-block; float:right",
+                              actionBttn('to_bbplot', label = 'Next',style = "bordered",
+                                         color = "danger",
+                                         size = "md",
+                                         block = FALSE,
+                                         no_outline = TRUE))
+                   ),
+                   column(12, align="center",
+                          HTML("<h5>Apply thresholds to select the most associated Gene/drug pairs for the visualization</h5>")
+                   ),
+                   hr(),
+                 ),      
+                 fluidRow(
+                   column(4,align="center",offset = 1,
+                          wellPanel(
+                            numericInput("FDRThr","Choose Gene/drug pairs with FDRs less than:", value = 0.05),
+                            chooseSliderSkin(skin = 'Round'),
+                            status = 'danger',
+                            sliderInput("PosCorThre", "Choose Gene/drug pairs with correlations more than:",min = 0, max =1,value = 0.7,step = 0.1),
+                            sliderInput("NegCorThre", "Choose Gene/drug pairs with correlations less than:",min = -1, max =0,value = -0.7,step = 0.1),
+                            br(),
+                            actionBttn("Thre","Apply Thresholds",
+                                       style = "gradient",
+                                       color = "danger",
+                                       size = "md",
+                                       block = FALSE,
+                                       no_outline = TRUE))),
+                   column(5,align="center",offset = 1,
+                          wellPanel(DT::DTOutput("Sigcors")), 
+                          br(),
+                          uiOutput("downloadthre")
+                   )
+                 ),
+                 fluidRow(
+                   column(12,
+                          hr()
+                   )
+                 ),
+                 fluidPage(
+                   column(12,align="center",
+                          br(),
+                          div(style ="display:inline-block", 
+                              uiOutput('to_scatterPlot')),
+                          div(style ="display:inline-block", 
+                              uiOutput('to_bubblePlot'))
+                   )
+                   
+                 )
+      ), 
+      bs4TabItem(tabName = "bubblePlot",
+                 fluidRow(
+                   column(12,
+                          div(style = "display:inline-block; float:left",
+                              actionBttn('backto_thresh', label = 'Back', 
+                                         style = "bordered",
+                                         color = "danger",
+                                         size = "md",
+                                         block = FALSE,
+                                         no_outline = TRUE)),
+                          div(style = "display:inline-block; float:right",
+                              actionBttn('to_scplot', label = 'Next',style = "bordered",
+                                         color = "danger",
+                                         size = "md",
+                                         block = FALSE,
+                                         no_outline = TRUE))
+                   ),
+                   column(12, align="center",
+                          HTML("<h5>Bubble Plot</h5>")
+                   ),
+                   hr(),
+                 ),
+                 
+                 fluidRow(
+                   column(12,align="center",
+                          actionBttn('plotBubbleplot', label = 'Plot Bubble Plot', 
+                                     style = "gradient",
+                                     color = "danger",
+                                     size = "md",
+                                     block = FALSE,
+                                     no_outline = TRUE),
+                          plotOutput("bubble",width = "auto",height = "auto"),
+                          hr(),
+                          uiOutput("bubbledownload", label = "Download")
+                   )
+                 )
+      ),
+      bs4TabItem(tabName = "scatterBoxplot",
+                 fluidRow(
+                   column(12,
+                          div(style = "display:inline-block; float:left",
+                              actionBttn('backto_bbplot', label = 'Back', 
+                                         style = "bordered",
+                                         color = "danger",
+                                         size = "md",
+                                         block = FALSE,
+                                         no_outline = TRUE))
+                   ),
+                   column(12, align="center",
+                          HTML("<h5>Select among associated gene/drug pairs to be visualized by a scatter plot with a marginal boxplot </h5>")
+                   )
+                 ),
+                 hr(),
+                 fluidRow(
+                   column(6,align="center",
+                          br(),
+                          uiOutput("selGenedrug"),
+                          br(),
+                          br(),
+                          uiOutput("scatterLabel"),
+                          uiOutput("ShowBoxplot"),
+                          prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
+                                         ,status = "danger", outline = TRUE),
+                          prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
+                                         status = "danger", outline = TRUE),
+                          div(id = "Col0"),
+                          div(id = "Col1"),
+                          div(id = "Col2")
+                   ),
+                   column(4,align="center",
+                          br(),
+                          br(),
+                          plotOutput("scatterplt",width = "100%"),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          uiOutput("scatterdownload", label = "Download")
+                   )
+                 ),
+                 fluidRow(column(12,align="center",
+                                 #uiOutput('downloadScatter')
+                                 hr()
+                 )      
+                 )
+                 
+      ),
+      bs4TabItem(tabName = "tutorial",
+                 fluidRow(
+                   column(4,
+                          box('This is the tutorial page', title = "tutorial",  
+                              status = "primary", solidHeader = TRUE,
+                              collapsed = FALSE, width=12)                    
+                   )
+                 )
+      ),
+      bs4TabItem(tabName = "faq",
+                 fluidRow(
+                   column(4,
+                          box('Questions here', title = "FAQ Page",  
+                              status = "primary", solidHeader = TRUE, collapsible = T,
+                              collapsed = FALSE, width=12)                    
+                   )
+                 )
+      ),
+      bs4TabItem(tabName = "contact",
+                 fluidRow(
+                   column(4,
+                          box('contact', title = "Contact us",  
+                              status = "primary", solidHeader = TRUE, collapsible = T,
+                              collapsed = FALSE, width=12)                    
+                   )
+                 )
+      ),
+      bs4TabItem(tabName = "meetteam",
+                 fluidRow(
+                   column(4,
+                          box('content goes here', title = "The team",  
+                              status = "primary", solidHeader = TRUE, collapsible = T,
+                              collapsed = FALSE, width=12)                    
+                   )
+                 )
+      )
     )
   ),
   controlbar = NULL,
   skin = 'light',
   footer = bs4DashFooter(
-    left = a(href = "https://github.com/mentorchains/RShiny2022-CGDS","@BI-STEM-Away"), 
-    right = "This app is created by STEM-Away RShiny Project Team - Session 1, 2022",
+    left = HTML("<a href='https://github.com/STEM-Away-RShiny-app-project/cGEDs' style = 'color:#FFFFFF'>@BI-STEM-Away</a>"),
+    right = HTML("<a href='https://github.com/STEM-Away-RShiny-app-project/cGEDs' style = 'color:#FFFFFF'>This app is created by STEM-Away RShiny Project Team - Session 1, 2022</a>"),
     fixed = FALSE),
   preloader = NULL,
   options = NULL,
@@ -392,7 +419,6 @@ ui <- bs4DashPage(
   dark = FALSE,
   scrollToTop = TRUE
 )
-
 
 
 server <- function(input, output,session) {
@@ -413,18 +439,18 @@ server <- function(input, output,session) {
   )
   
   # Data Selection & Correlation Calculation Buttons
-
   observeEvent(input$backto_introduction, {
     updateTabItems(session, "tabs", "introduction")
-
   }
   )
-  
+  observeEvent(input$to_thresh, {
+    updateTabItems(session, "tabs", "applyThresholds")
+  }
+  )
   observeEvent(input$to_next, {
     updateTabItems(session, "tabs", "applyThresholds")
-    
   }
-  )
+  )  
   
   #Apply Thresholds button
   observeEvent(input$backto_dataSelection, {
@@ -444,21 +470,16 @@ server <- function(input, output,session) {
     updateTabItems(session, "tabs", "scatterBoxplot")
   }
   )  
-
-  
-  observeEvent(input$to_selectData, {
-    updateTabItems(session, "tabs", "dataSelection")
-  }
-  )  
   
   # Bubble Plot page buttons
-  
-  # Apply thresholds & Scatter-boxplot buttons
-  observeEvent(input$to_introduction, {
-    updateTabItems(session, "tabs", "backto_introduction")
+  observeEvent(input$backto_thresh, {
+    updateTabItems(session, "tabs", "applyThresholds")
   }
   )
-
+  observeEvent(input$to_scplot, {
+    updateTabItems(session, "tabs", "scatterBoxplot")
+  }
+  ) 
   
   # Apply thresholds & Scatter/boxplot buttons
   observeEvent(input$backto_bbplot, {
@@ -493,7 +514,6 @@ server <- function(input, output,session) {
   correlations<-eventReactive(input$cal,{
     
     # Provide a vector of drug names
-    # Remove drugs with less than two cell lines
     drugs <- df() %>%
       select(Drug.name, 'Cell line') %>%
       group_by(Drug.name) %>%
@@ -561,16 +581,14 @@ server <- function(input, output,session) {
   })
   
   # "Next" button appears when clicking on the "Correlation Calculation" button
-  observeEvent(input$cal, {output$to_next<-renderUI({actionBttn("to_next","Next",style="gradient",color ="success")})
+  observeEvent(input$cal, {output$to_next<-renderUI({actionBttn("to_next","Next",status="danger")})
   })
   
   # "Bubble Plot" and "Scatter/Boxplot" buttons appear when clicking on the "Apply Thresholds" button 
-  observeEvent(input$Thre, {output$to_bubblePlot<-renderUI({actionBttn("to_bubblePlot","Bubble Plot",style="gradient",color ="success")})
+  observeEvent(input$Thre, {output$to_bubblePlot<-renderUI({actionBttn("to_bubblePlot","Bubble Plot",status="danger")})
   })
   
-
-  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionBttn("to_scatterPlot","Scatter-Boxplot",style="gradient",color ="success")})
-
+  observeEvent(input$Thre, {output$to_scatterPlot<-renderUI({actionBttn("to_scatterPlot","Scatter/Boxplot",status="danger")})
   })
   
   #Apply thresholds
@@ -636,26 +654,24 @@ server <- function(input, output,session) {
   }) })
   #Scatter label check box appears after selGenedrug drop-down works
   observeEvent(req(input$selGenedrug),{output$scatterLabel<-renderUI({
-
-  prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
-                    ,status = "success", outline = TRUE)
-   }) })
-   # Show box plot check box appears after selGenedrug drop-down works 
-   observeEvent(req(input$selGenedrug),{output$ShowBoxplot<-renderUI({
-   prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
-                    status = "success", outline = TRUE)
-   }) })
-
-  #Scatter-boxplot
-   
-   Scatter<-reactive({
-     req(input$selGenedrug)
-     drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug) , 3]
-     drug_df <- subset(df(), Drug.name == drug)
-     gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug), 4])
-     med=median(drug_df[,gene])
-     drug_df$GeneExpressLevel = ifelse (drug_df[,gene] >= med, "high", "low")
-
+    prettyCheckbox("scatterLabel","Show cell line names",value = TRUE
+                   ,status = "success", outline = TRUE)
+  }) })
+  # Show box plot check box appears after selGenedrug drop-down works 
+  observeEvent(req(input$selGenedrug),{output$ShowBoxplot<-renderUI({
+    prettyCheckbox("ShowBoxplot","Show marginal boxplots",value = TRUE,
+                   status = "success", outline = TRUE)
+  }) })
+  
+  #Scatter/boxplot
+  
+  Scatter<-reactive({
+    req(input$selGenedrug)
+    drug<-sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug) , 3]
+    drug_df <- subset(df(), Drug.name == drug)
+    gene<-as.character(sigcors4()[which(sigcors4()$GeneDrug ==input$selGenedrug), 4])
+    med=median(drug_df[,gene])
+    drug_df$GeneExpressLevel = ifelse (drug_df[,gene] >= med, "high", "low")
     
     if(input$ShowBoxplot==TRUE){
       if(input$scatterLabel==TRUE){
@@ -692,108 +708,106 @@ server <- function(input, output,session) {
           geom_smooth(method=("lm"))+
           labs( x = paste("Expression levels of",gene),y= paste("IC50 of",drug))+
           geom_point(size=1)+geom_text_repel()
-
-         }
-     }
-   })
-   
-   # ObserveEvent functions related to selecting the color of scatter-boxplots
-   observeEvent(input$ShowBoxplot,{
-     if (input$ShowBoxplot==TRUE){
-       insertUI(
-         selector = "#Col1",
-         ui=colourpicker::colourInput("col1", "Select colour of boxplots related to the high expression cell lines"
-       ,showColour="both", value = "5158AD")
-       )
-     }
-     else if(input$ShowBoxplot==FALSE){
-       removeUI(
-         selector = "div#Col1 > div"
-       )
-     } 
-   })
+      }
+    }
+  })
   
-   observeEvent(input$ShowBoxplot,{
-     if (input$ShowBoxplot==TRUE){
-       insertUI(
-         selector = "#Col2",
-         ui=colourpicker::colourInput("col2", "Select colour of boxplots related to the low expression cell lines"
-         ,showColour="both", value = "F78A25")
-       )
-     }
-     else if(input$ShowBoxplot==FALSE){
-       removeUI(
-         selector = "div#Col2 > div"
-       )
-     } 
-   })
+  # ObserveEvent functions related to selecting the color of scatter/boxplots
+  observeEvent(input$ShowBoxplot,{
+    if (input$ShowBoxplot==TRUE){
+      insertUI(
+        selector = "#Col1",
+        ui=colourpicker::colourInput("col1", "Select colour of boxplots related to the high expression cell lines"
+                                     ,showColour="both", value = "5158AD")
+      )
+    }
+    else if(input$ShowBoxplot==FALSE){
+      removeUI(
+        selector = "div#Col1 > div"
+      )
+    } 
+  })
   
-   observeEvent(input$ShowBoxplot,{
-     if (input$ShowBoxplot==FALSE){
-       insertUI(
-         selector = "#Col0",
-         ui=colourpicker::colourInput("col0", "Select colour of dots"
-         ,showColour="both", value = "F78A25")
-       )
-     }
-     else if(input$ShowBoxplot==TRUE){
-       removeUI(
-         selector = "div#Col0 > div"
-       )
-     } 
-   })
-   
-   # The bubble plot appears after clicking on plot bubble plot button
-   bubbleButton<-eventReactive(input$plotBubbleplot, {
-     Bubbleplot()
-   })
-   
-   
-   output$bubble <-renderPlot(
-   bubbleButton(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , width = function(){length(unique(sigcors()$Drug))*35+300}
-   )
-   
-   
-   observeEvent(input$plotBubbleplot, {
-     # The download button of the scatter plot 
-     output$bubbledownload <-renderUI({ downloadHandler(
-       filename =  function() {
-         "Bubble Plot.png"
-       },
-       # content is a function with argument file. content writes the plot to the device
-       content = function(file) {
-         device <- function(..., width, height) {
-           grDevices::png(..., width = width, height = height,
-                          res = 300, units = "in")}
-         ggsave(file, plot = Bubbleplot(), device = device)
-       } 
-     )
-     })
-   })
-   
-   output$scatterplt<-renderPlot(Scatter(),res = 96, height = 600, width = 600)
-   
-   # The download button of the scatter plot spears after selGenedrug drop-down works
-   observeEvent(req(input$selGenedrug), {
-     # The download button of the scatter plot 
-     output$scatterdownload <-renderUI({ downloadHandler(
-     filename =  function() {
-       "Scatter Plot.png"
-     },
-     # content is a function with argument file. content writes the plot to the device
-     content = function(file) {
-       device <- function(..., width, height) {
-         grDevices::png(..., width = width, height = height,
-                        res = 300, units = "in")}
-       ggsave(file, plot = Scatter(), device = device)
-     } 
-   )
-   })
-   })
-   
-   output$cortabs<-DT::renderDT(
-     correlations()
-
+  
+  observeEvent(input$ShowBoxplot,{
+    if (input$ShowBoxplot==TRUE){
+      insertUI(
+        selector = "#Col2",
+        ui=colourpicker::colourInput("col2", "Select colour of boxplots related to the low expression cell lines",
+                                     showColour="both", value = "F78A25")
+      )
+    }
+    else if(input$ShowBoxplot==FALSE){
+      removeUI(
+        selector = "div#Col2 > div"
+      )
+    } 
+  })
+  
+  observeEvent(input$ShowBoxplot,{
+    if (input$ShowBoxplot==FALSE){
+      insertUI(
+        selector = "#Col0",
+        ui=colourpicker::colourInput("col0", "Select colour of dots",
+                                     showColour="both", value = "F78A25")
+      )
+    }
+    else if(input$ShowBoxplot==TRUE){
+      removeUI(
+        selector = "div#Col0 > div"
+      )
+    } 
+  })
+  
+  bubbleButton<-eventReactive(input$plotBubbleplot, {
+    Bubbleplot()
+  })
+  
+  output$bubble <-renderPlot(
+    bubbleButton(),res = 96, height =function(){length(unique(sigcors()$Gene))*15+450} , 
+    width = function(){length(unique(sigcors()$Drug))*35+300}
+  )
+  
+  
+  observeEvent(input$plotBubbleplot, {
+    # The download button of the scatter plot 
+    output$bubbledownload <-renderUI({ downloadHandler(
+      filename =  function() {
+        "Bubble Plot.png"
+      },
+      # content is a function with argument file. content writes the plot to the device
+      content = function(file) {
+        device <- function(..., width, height) {
+          grDevices::png(..., width = width, height = height,
+                         res = 300, units = "in")}
+        ggsave(file, plot = Bubbleplot(), device = device)
+      } 
+    )
+    })
+  })
+  
+  output$scatterplt<-renderPlot(Scatter(),res = 96, height = 600, width = 600)
+  
+  # The download button of the scatter plot spears after selGenedrug drop-down works
+  observeEvent(input$selGenedrug, {
+    # The download button of the scatter plot 
+    output$scatterdownload <-renderUI({ downloadHandler(
+      filename =  function() {
+        "Scatter Plot.png"
+      },
+      # content is a function with argument file. content writes the plot to the device
+      content = function(file) {
+        device <- function(..., width, height) {
+          grDevices::png(..., width = width, height = height,
+                         res = 300, units = "in")}
+        ggsave(file, plot = Scatter(), device = device)
+      } 
+    )
+    })
+  })
+  
+  output$cortabs<-DT::renderDT(
+    correlations()
   )
   output$Sigcors<-DT::renderDT(
     sigcors()
