@@ -1,5 +1,6 @@
 
 # RShiny2022 App: cGEDs (Cancer Gene-expression Drug-Sensitivity) App
+An application for finding cancer specific drug effectivity biomarkers
 This repository is dedicated to the documentation and management of cGEDs (Cancer Gene-expression Drug-Sensitivity) RShiny app (2022).
 
 ---
